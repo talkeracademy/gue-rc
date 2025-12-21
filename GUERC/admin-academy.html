@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academy Management | GUERC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
+        body { margin: 0; background: #020617; font-family: 'Inter', sans-serif; color: white; min-height: 100vh; }
+        .glass-panel { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; }
+    </style>
+</head>
+<body class="p-8">
+    <nav class="flex justify-between items-center mb-10">
+        <a href="admin.html" class="text-cyan-400 hover:text-white transition flex items-center gap-2">
+            <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+        </a>
+        <div class="flex gap-4">
+            <button id="addBoxBtn" class="bg-cyan-500 text-slate-950 px-6 py-2 rounded-xl font-bold hover:bg-cyan-400 transition flex items-center gap-2">
+                <i class="fa-solid fa-plus"></i> Add New Box
+            </button>
+            <button id="syncBtn" class="bg-emerald-500 text-slate-950 px-6 py-2 rounded-xl font-bold hover:bg-emerald-400 transition flex items-center gap-2">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Sync Changes
+            </button>
+        </div>
+    </nav>
+
+    <div id="academy-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3tnoCO0MwfSM-FH95cC52OyUHzaouC8E", 
+            authDomain: "guercllc.firebaseapp.com",
+            projectId: "guercllc",
+            storageBucket: "guercllc.firebasestorage.app",
+            messagingSenderId: "450126717624",
+            appId: "1:450126717624:web:4e152e748315b33cc68a4d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const listEl = document.getElementById('academy-list');
+
+        onAuthStateChanged(auth, (user) => { if (!user) window.location.href = "index.html"; });
+
+        async function loadAcademy() {
+            const q = query(collection(db, "academy_programs"), orderBy("order", "asc"));
+            const snap = await getDocs(q);
+            listEl.innerHTML = '';
+            snap.forEach(docSnap => createBox(docSnap.id, docSnap.data()));
+        }
+
+        function createBox(id, data) {
+            const div = document.createElement('div');
+            div.className = "glass-panel p-6 relative group cursor-move";
+            div.dataset.id = id;
+            div.innerHTML = `
+                <button class="delete-btn absolute -top-2 -right-2 bg-red-500 text-white w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 transition">×</button>
+                <div class="space-y-3">
+                    <input type="text" class="title bg-transparent border-b border-white/10 w-full font-bold text-cyan-400" value="${data.title || ''}" placeholder="Program Title">
+                    <input type="text" class="img bg-transparent border-b border-white/10 w-full text-xs" value="${data.image || ''}" placeholder="Image URL">
+                    <textarea class="desc bg-transparent border border-white/10 w-full text-xs p-2 h-20 rounded" placeholder="Short description">${data.description || ''}</textarea>
+                    <textarea class="longDesc bg-transparent border border-white/10 w-full text-xs p-2 h-32 rounded" placeholder="Full details">${data.longDescription || ''}</textarea>
+                </div>
+            `;
+            div.querySelector('.delete-btn').onclick = () => div.remove();
+            listEl.appendChild(div);
+        }
+
+        document.getElementById('addBoxBtn').onclick = () => createBox(Date.now().toString(), {});
+
+        document.getElementById('syncBtn').onclick = async () => {
+            const boxes = listEl.querySelectorAll('.glass-panel');
+            for(let i=0; i < boxes.length; i++) {
+                const b = boxes[i];
+                await setDoc(doc(db, "academy_programs", b.dataset.id), {
+                    title: b.querySelector('.title').value,
+                    image: b.querySelector('.img').value,
+                    description: b.querySelector('.desc').value,
+                    longDescription: b.querySelector('.longDesc').value,
+                    order: i
+                });
+            }
+            alert("Academy Synchronized!");
+        };
+
+        new Sortable(listEl, { animation: 150 });
+        loadAcademy();
+    </script>
+</body>
+</html>
