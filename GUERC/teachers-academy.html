@@ -141,11 +141,25 @@
                 const grid = document.getElementById('programsGrid');
                 grid.innerHTML = ""; 
 
+                // Get the current language memory
+                const lang = localStorage.getItem('preferredLang') || 'uz';
+                
+                // Define which "index" to use (0 = uz, 1 = en, 2 = tr)
+                const langIndex = lang === 'uz' ? 0 : (lang === 'en' ? 1 : 2);
+
                 programsData.forEach((prog, index) => {
+                    // Split the titles and descriptions by the "|" symbol
+                    const titleParts = prog.t.split('|');
+                    const descParts = prog.s.split('|');
+
+                    // Pick the right language, or fall back to English if the translation is missing
+                    const displayTitle = (titleParts[langIndex] || titleParts[0]).trim();
+                    const displayDesc = (descParts[langIndex] || descParts[0]).trim();
+
                     grid.innerHTML += `
                         <div class="training-card bg-slate-900/40 p-8 rounded-3xl border border-white/5 flex flex-col h-full">
-                            <h3 class="text-2xl font-bold mb-4 text-cyan-400">${prog.t}</h3>
-                            <p class="text-slate-300 mb-8 flex-grow">${prog.s}</p>
+                            <h3 class="text-2xl font-bold mb-4 text-cyan-400">${displayTitle}</h3>
+                            <p class="text-slate-300 mb-8 flex-grow">${displayDesc}</p>
                             <div class="flex gap-2">
                                 <button onclick="showDetails(${index})" class="flex-1 py-3 border border-cyan-500/30 rounded-xl text-sm hover:bg-cyan-500/10 transition">Learn More</button>
                                 <button onclick="openEnroll(${index})" class="flex-1 py-3 bg-cyan-500 text-slate-950 font-bold rounded-xl text-sm hover:bg-cyan-400 transition">Enroll Now</button>
