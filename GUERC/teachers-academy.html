@@ -10,7 +10,6 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
         body { margin: 0; background: #020617; font-family: 'Inter', sans-serif; color: white; transition: background-color 0.5s ease; min-height: 100vh; }
         body.light-mode { background: #f8fafc; color: #0f172a; }
-        #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; }
         
         .glass-panel { 
             background: rgba(15, 23, 42, 0.6); 
@@ -22,21 +21,39 @@
         body.light-mode .glass-panel { 
             background: rgba(255, 255, 255, 0.85); 
             border: 1px solid rgba(0, 0, 0, 0.05); 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.05);
         }
 
-        .training-card { transition: transform 0.3s ease; }
-        .training-card:hover { transform: translateY(-5px); }
-        
-        body.light-mode .training-card { background: white; border: 1px solid rgba(0,0,0,0.05); }
-        body.light-mode .text-slate-300, body.light-mode .text-slate-400 { color: #475569; }
+        .training-card { transition: all 0.3s ease; }
+        .training-card:hover { transform: translateY(-5px); border-color: rgba(34, 211, 238, 0.3); }
         
         .hidden { display: none !important; }
+
+        /* Custom Notification Styling */
+        #custom-alert {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 2000;
+            transform: translateY(100px);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0;
+            pointer-events: none;
+        }
+        #custom-alert.show { transform: translateY(0); opacity: 1; }
+        .alert-glass {
+            background: rgba(34, 211, 238, 0.15);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(34, 211, 238, 0.3);
+            padding: 1rem 2rem;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
     </style>
 </head>
 <body>
-    <canvas id="bg-canvas"></canvas>
-
     <nav class="flex justify-between items-center p-10">
         <a href="index.html" class="text-cyan-400 font-bold hover:text-cyan-500 transition flex items-center gap-2">
             <i class="fa-solid fa-arrow-left"></i> Back to Home
@@ -52,7 +69,7 @@
             <p class="text-xl text-slate-400 mb-12">Empowering educators with global methodologies.</p>
             
             <div id="programsGrid" class="grid md:grid-cols-3 gap-8">
-                <div class="col-span-3 text-center py-20 opacity-50">Loading programs...</div>
+                <div class="col-span-3 text-center py-20 opacity-50">Connecting to Academy Database...</div>
             </div>
         </div>
     </main>
@@ -60,9 +77,7 @@
     <div id="detailsModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-xl p-4">
         <div class="glass-panel p-10 max-w-2xl w-full relative">
             <button onclick="closeModal('detailsModal')" class="absolute top-6 right-6 text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-2xl"></i></button>
-            
             <img id="modalImg" src="" alt="" class="w-full h-48 object-cover rounded-2xl mb-6 hidden">
-            
             <h2 id="modalTitle" class="text-3xl font-bold text-cyan-400 mb-4"></h2>
             <div id="modalLong" class="text-slate-300 leading-relaxed text-lg max-h-[40vh] overflow-y-auto pr-4"></div>
         </div>
@@ -85,6 +100,13 @@
         </div>
     </div>
 
+    <div id="custom-alert">
+        <div class="alert-glass">
+            <i id="alert-icon" class="fa-solid fa-circle-check text-cyan-400 text-xl"></i>
+            <p id="alert-message" class="text-white font-bold text-sm"></p>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -102,7 +124,17 @@
         const db = getFirestore(app);
         let programsData = [];
 
-        // Real-time sync with Dynamic Admin Array
+        // Dynamic Toast Function
+        function showToast(msg, isError = false) {
+            const alert = document.getElementById('custom-alert');
+            const icon = document.getElementById('alert-icon');
+            document.getElementById('alert-message').innerText = msg;
+            icon.className = isError ? "fa-solid fa-circle-xmark text-red-400 text-xl" : "fa-solid fa-circle-check text-cyan-400 text-xl";
+            alert.classList.add('show');
+            setTimeout(() => alert.classList.remove('show'), 3000);
+        }
+
+        // Real-time sync with Admin Array
         onSnapshot(doc(db, "content", "academy"), (doc) => {
             if (doc.exists()) {
                 programsData = doc.data().programs || [];
@@ -123,22 +155,19 @@
             }
         });
 
-        // Modal Functions
+        // Global Modal Controls
         window.showDetails = (index) => {
             const prog = programsData[index];
             const imgEl = document.getElementById('modalImg');
-            
             document.getElementById('modalTitle').innerText = prog.t;
             document.getElementById('modalLong').innerText = prog.l;
             
-            // Handle the Image display
             if (prog.img && prog.img.trim() !== "") {
                 imgEl.src = prog.img;
                 imgEl.classList.remove('hidden');
             } else {
                 imgEl.classList.add('hidden');
             }
-            
             document.getElementById('detailsModal').classList.remove('hidden');
         };
 
@@ -151,7 +180,7 @@
 
         window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
 
-        // Form Submission
+        // Form Submission with custom toast
         document.getElementById('enrollForm').onsubmit = async (e) => {
             e.preventDefault();
             try {
@@ -163,13 +192,13 @@
                     message: document.getElementById('userMsg').value,
                     date: new Date().toISOString()
                 });
-                alert("Application Sent! Our team will contact you shortly.");
-                closeModal('enrollModal');
+                showToast("Application Sent Successfully!");
+                closeModal('enrollModal'); 
                 e.target.reset();
-            } catch (err) { alert("Error: " + err.message); }
+            } catch (err) { showToast("Error: " + err.message, true); }
         };
 
-        // Theme Toggle Logic
+        // Theme Toggle
         const themeToggle = document.getElementById('themeToggle');
         if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
         themeToggle.onclick = () => {
@@ -178,4 +207,4 @@
         };
     </script>
 </body>
-</html>
+</html> 

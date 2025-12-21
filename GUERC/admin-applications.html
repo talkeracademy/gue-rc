@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Applications Manager | GUERC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
+        body { margin: 0; background: #020617; font-family: 'Inter', sans-serif; color: white; min-height: 100vh; }
+        .glass-panel { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; }
+    </style>
+</head>
+<body class="p-8">
+    <nav class="flex justify-between items-center mb-10">
+        <a href="admin.html" class="text-cyan-400 hover:text-white transition flex items-center gap-2">
+            <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+        </a>
+        <button id="exportCsv" class="bg-emerald-500 text-slate-950 px-6 py-2 rounded-xl font-bold hover:bg-emerald-400 transition flex items-center gap-2">
+            <i class="fa-solid fa-file-csv"></i> Export to CSV
+        </button>
+    </nav>
+
+    <div class="glass-panel overflow-hidden">
+        <table class="w-full text-left border-collapse">
+            <thead class="bg-white/5 border-b border-white/10 text-cyan-400 uppercase text-xs tracking-widest">
+                <tr>
+                    <th class="p-5">Applicant</th>
+                    <th class="p-5">Program</th>
+                    <th class="p-5">Phone</th>
+                    <th class="p-5">Date</th>
+                </tr>
+            </thead>
+            <tbody id="applications-table-body" class="divide-y divide-white/5">
+                </tbody>
+        </table>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3tnoCO0MwfSM-FH95cC52OyUHzaouC8E", 
+            authDomain: "guercllc.firebaseapp.com",
+            projectId: "guercllc",
+            storageBucket: "guercllc.firebasestorage.app",
+            messagingSenderId: "450126717624",
+            appId: "1:450126717624:web:4e152e748315b33cc68a4d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        let allApps = [];
+
+        onAuthStateChanged(auth, (user) => { if (!user) window.location.href = "index.html"; });
+
+        async function loadApplications() {
+            const q = query(collection(db, "applications"), orderBy("date", "desc"));
+            const snap = await getDocs(q);
+            const body = document.getElementById('applications-table-body');
+            body.innerHTML = '';
+            allApps = [];
+
+            snap.forEach(docSnap => {
+                const data = docSnap.data();
+                allApps.push(data);
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-white/5 transition";
+                tr.innerHTML = `
+                    <td class="p-5 font-bold">${data.name || 'Anonymous'}</td>
+                    <td class="p-5">${data.program || 'N/A'}</td>
+                    <td class="p-5 text-slate-400 text-sm">${data.phone || 'N/A'}</td>
+                    <td class="p-5 text-slate-500 text-xs">${new Date(data.date).toLocaleDateString()}</td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        document.getElementById('exportCsv').onclick = () => {
+            let csv = "Name,Program,Phone,Email,Message,Date\n";
+            allApps.forEach(a => {
+                csv += `"${a.name}","${a.program}","${a.phone}","${a.email}","${a.message}","${a.date}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'guerc_applications.csv';
+            a.click();
+        };
+
+        loadApplications();
+    </script>
+</body>
+</html>
