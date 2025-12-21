@@ -7,18 +7,10 @@
       "**/node_modules/**"
     ],
     "rewrites": [
-      {
-        "source": "/admin",
-        "destination": "/admin.html"
-      },
-      {
-        "source": "/admin-academy",
-        "destination": "/admin-academy.html"
-      },
-      {
-        "source": "/admin-applications",
-        "destination": "/admin-applications.html"
-      }
+      { "source": "/admin", "destination": "/admin.html" },
+      { "source": "/admin-academy", "destination": "/admin-academy.html" },
+      { "source": "/admin-applications", "destination": "/admin-applications.html" },
+      { "source": "/teachers-academy", "destination": "/teachers-academy.html" }
     ]
   }
 }
