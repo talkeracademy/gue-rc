@@ -84,60 +84,77 @@
     <canvas id="bg-canvas"></canvas>
 
     <nav class="flex justify-between items-center p-10">
-    <div>
-        <h1 class="text-4xl font-bold tracking-tight">Global Uzbek education</h1>
-        <p class="text-[11px] tracking-[0.5em] uppercase opacity-50 mt-1">Research Center</p>
-    </div>
-    <div class="flex items-center space-x-8 text-2xl">
-        <img src="https://flagcdn.com/w40/uz.png" class="w-8 rounded shadow-2xl" alt="UZ">
-        <i id="themeToggle" class="fa-solid fa-moon cursor-pointer hover:text-cyan-400 transition"></i>
-        <i id="userBtn" class="fa-regular fa-user cursor-pointer hover:text-cyan-400 transition"></i>
-        <button id="memberLogoutBtn" class="hidden text-xs bg-red-500/20 text-red-400 px-3 py-1 rounded-full border border-red-500/30 hover:bg-red-500/40 transition">Logout</button>
-        <i class="fa-solid fa-magnifying-glass cursor-pointer hover:text-cyan-400 transition"></i>
-    </div>
-</nav>
+        <div>
+            <h1 id="main-title" class="text-4xl font-bold tracking-tight">Global Uzbek education</h1>
+            <p id="main-subtitle" class="text-[11px] tracking-[0.5em] uppercase opacity-50 mt-1">Research Center</p>
+        </div>
+        <div class="flex items-center space-x-8 text-2xl">
+            <div class="relative group flex items-center">
+                <img id="currentFlag" src="https://flagcdn.com/w40/uz.png" class="w-8 rounded shadow-2xl cursor-pointer border border-white/10" alt="UZ">
+                <div class="absolute top-full right-0 mt-2 py-2 bg-white dark:bg-slate-900 border border-black/5 dark:border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 min-w-[140px]">
+                    <button onclick="changeLang('uz')" class="w-full flex items-center space-x-3 px-4 py-2 hover:bg-cyan-500/10 transition text-sm">
+                        <img src="https://flagcdn.com/w40/uz.png" class="w-5 rounded-sm">
+                        <span class="dark:text-white">O'zbek</span>
+                    </button>
+                    <button onclick="changeLang('en')" class="w-full flex items-center space-x-3 px-4 py-2 hover:bg-cyan-500/10 transition text-sm">
+                        <img src="https://flagcdn.com/w40/gb.png" class="w-5 rounded-sm">
+                        <span class="dark:text-white">English</span>
+                    </button>
+                    <button onclick="changeLang('tr')" class="w-full flex items-center space-x-3 px-4 py-2 hover:bg-cyan-500/10 transition text-sm">
+                        <img src="https://flagcdn.com/w40/tr.png" class="w-5 rounded-sm">
+                        <span class="dark:text-white">Türkçe</span>
+                    </button>
+                </div>
+            </div>
+
+            <i id="themeToggle" class="fa-solid fa-moon cursor-pointer hover:text-cyan-400 transition"></i>
+            <i id="userBtn" class="fa-regular fa-user cursor-pointer hover:text-cyan-400 transition"></i>
+            <button id="memberLogoutBtn" class="hidden text-xs bg-red-500/20 text-red-400 px-3 py-1 rounded-full border border-red-500/30 hover:bg-red-500/40 transition">Logout</button>
+            <i class="fa-solid fa-magnifying-glass cursor-pointer hover:text-cyan-400 transition"></i>
+        </div>
+    </nav>
 
     <main class="flex items-center justify-center min-h-[65vh] px-8">
         <div class="glass-panel grid grid-cols-2 md:grid-cols-4 gap-y-16 gap-x-12 p-20 max-w-6xl w-full">
             
             <button id="openAboutBtn" class="nav-item">
                 <i class="fa-solid fa-users-rays"></i>
-                <span>About Us</span>
+                <span id="txt-about">About Us</span>
             </button>
 
             <a href="teachers-academy.html" class="nav-item">
                 <i class="fa-solid fa-school-flag"></i>
-                <span>Teachers academy</span>
+                <span id="txt-academy">Teachers academy</span>
             </a>
 
             <a href="#" class="nav-item">
                 <i class="fa-solid fa-map-location-dot"></i>
-                <span>International Camps</span>
+                <span id="txt-camps">International Camps</span>
             </a>
 
             <a href="#" class="nav-item">
                 <i class="fa-solid fa-globe"></i>
-                <span>International olimpics</span>
+                <span id="txt-olympics">International olimpics</span>
             </a>
 
             <a href="#" class="nav-item">
                 <i class="fa-solid fa-graduation-cap"></i>
-                <span>Scholarships</span>
+                <span id="txt-scholarships">Scholarships</span>
             </a>
 
             <a href="#" class="nav-item">
                 <i class="fa-solid fa-handshake-simple"></i>
-                <span>Partners</span>
+                <span id="txt-partners">Partners</span>
             </a>
 
             <a href="#" class="nav-item">
                 <i class="fa-solid fa-file-lines"></i>
-                <span>Articles and reports</span>
+                <span id="txt-articles">Articles and reports</span>
             </a>
 
             <a href="#" class="nav-item">
                 <i class="fa-solid fa-images"></i>
-                <span>Galery</span>
+                <span id="txt-gallery">Galery</span>
             </a>
 
         </div>
@@ -171,17 +188,19 @@
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
+            const isLight = document.body.classList.contains('light-mode');
+            const dotColor = isLight ? 'rgba(71, 85, 105, 0.4)' : 'rgba(34, 211, 238, 0.4)';
+            const lineColor = isLight ? 'rgba(71, 85, 105, ' : 'rgba(34, 211, 238, ';
+
             particles.forEach((p, i) => {
                 p.x += p.vx;
                 p.y += p.vy;
-
                 if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
                 if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
 
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(34, 211, 238, 0.4)';
+                ctx.fillStyle = dotColor; 
                 ctx.fill();
 
                 for (let j = i + 1; j < particles.length; j++) {
@@ -191,7 +210,7 @@
                         ctx.beginPath();
                         ctx.moveTo(p.x, p.y);
                         ctx.lineTo(p2.x, p2.y);
-                        ctx.strokeStyle = `rgba(34, 211, 238, ${0.15 - dist/180})`;
+                        ctx.strokeStyle = `${lineColor}${0.15 - dist/180})`;
                         ctx.lineWidth = 0.8;
                         ctx.stroke();
                     }
@@ -204,7 +223,74 @@
         init();
         animate();
     </script>
-<div id="authModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md">
+
+    <script>
+        const translations = {
+            uz: {
+                flag: "https://flagcdn.com/w40/uz.png",
+                title: "Global Uzbek education",
+                subtitle: "Research Center",
+                about: "Biz haqimizda",
+                academy: "O'qituvchilar akademiyasi",
+                camps: "Xalqaro oromgohlar",
+                olympics: "Xalqaro olimpiadalar",
+                scholarships: "Grantlar",
+                partners: "Hamkorlar",
+                articles: "Maqola va hisobotlar",
+                gallery: "Galereya"
+            },
+            en: {
+                flag: "https://flagcdn.com/w40/gb.png",
+                title: "Global Uzbek education",
+                subtitle: "Research Center",
+                about: "About Us",
+                academy: "Teachers Academy",
+                camps: "International Camps",
+                olympics: "International Olympics",
+                scholarships: "Scholarships",
+                partners: "Partners",
+                articles: "Articles and Reports",
+                gallery: "Gallery"
+            },
+            tr: {
+                flag: "https://flagcdn.com/w40/tr.png",
+                title: "Global Özbek eğitimi",
+                subtitle: "Araştırma Merkezi",
+                about: "Hakkımızda",
+                academy: "Öğretmen Akademisi",
+                camps: "Uluslararası Kamplar",
+                olympics: "Uluslararası Olimpiyatlar",
+                scholarships: "Burslar",
+                partners: "Ortaklar",
+                articles: "Makaleler ve Raporlar",
+                gallery: "Galeri"
+            }
+        };
+
+        window.changeLang = (lang) => {
+            const data = translations[lang];
+            document.getElementById('currentFlag').src = data.flag;
+            document.getElementById('main-title').innerText = data.title;
+            document.getElementById('main-subtitle').innerText = data.subtitle;
+            document.getElementById('txt-about').innerText = data.about;
+            document.getElementById('txt-academy').innerText = data.academy;
+            document.getElementById('txt-camps').innerText = data.camps;
+            document.getElementById('txt-olympics').innerText = data.olympics;
+            document.getElementById('txt-scholarships').innerText = data.scholarships;
+            document.getElementById('txt-partners').innerText = data.partners;
+            document.getElementById('txt-articles').innerText = data.articles;
+            document.getElementById('txt-gallery').innerText = data.gallery;
+            localStorage.setItem('preferredLang', lang);
+        };
+
+        // Load saved language or default to UZ
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('preferredLang') || 'uz';
+            changeLang(savedLang);
+        });
+    </script>
+
+    <div id="authModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md">
         <div class="glass-panel p-10 w-full max-w-md">
             <h2 id="modalTitle" class="text-2xl font-bold mb-6 text-center">Member Access</h2>
             <div class="space-y-4">
@@ -220,7 +306,6 @@
     </div>
 
     <script type="module">
-        // 1. Added onAuthStateChanged and signOut to imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
@@ -238,14 +323,12 @@
         const auth = getAuth(app);
         let isLoggingIn = true;
 
-        // Elements
         const authModal = document.getElementById('authModal');
         const authSubmitBtn = document.getElementById('authSubmitBtn');
         const toggleAuth = document.getElementById('toggleAuth');
         const userBtn = document.getElementById('userBtn');
         const memberLogoutBtn = document.getElementById('memberLogoutBtn');
 
-        // Toggle logic
         toggleAuth.onclick = () => {
             isLoggingIn = !isLoggingIn;
             document.getElementById('modalTitle').innerText = isLoggingIn ? "Member Access" : "Create Account";
@@ -253,27 +336,20 @@
             toggleAuth.innerText = isLoggingIn ? "Sign Up instead" : "Sign In instead";
         };
 
-        // Open Modal
         userBtn.onclick = () => authModal.classList.remove('hidden');
-
-        // 2. Added Logout Functionality
         memberLogoutBtn.onclick = () => signOut(auth);
 
-        // 3. Added Auth Observer (Handles UI changes and removes alerts)
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // When logged in: hide user icon, show logout button, close modal
                 userBtn.classList.add('hidden');
                 memberLogoutBtn.classList.remove('hidden');
                 authModal.classList.add('hidden');
             } else {
-                // When logged out: show user icon, hide logout button
                 userBtn.classList.remove('hidden');
                 memberLogoutBtn.classList.add('hidden');
             }
         });
 
-        // 4. Cleaned up Submit Logic (No more success alerts!)
         authSubmitBtn.onclick = async () => {
             const email = document.getElementById('authEmail').value;
             const pass = document.getElementById('authPassword').value;
@@ -288,67 +364,53 @@
             }
         };
     </script>
-    <div id="aboutModal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-xl p-4">
-    <div class="glass-panel p-10 max-w-2xl w-full relative overflow-y-auto max-h-[90vh]">
-        <button id="closeAboutBtn" class="absolute top-6 right-6 text-slate-400 hover:text-white transition">
-            <i class="fa-solid fa-xmark text-2xl"></i>
-        </button>
 
-        <h2 class="text-4xl font-bold mb-6 text-cyan-400">About Global Uzbek Education</h2>
-        
-        <div class="space-y-6 text-slate-300 leading-relaxed">
-            <p>
-                The <span class="text-white font-bold">Global Uzbek Education Research Center</span> is dedicated to advancing the educational landscape of Uzbekistan through rigorous data analysis and international collaboration.
-            </p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-                <div class="bg-slate-900/50 p-4 rounded-2xl border border-white/5">
-                    <h3 class="text-cyan-400 font-bold mb-2"><i class="fas fa-bullseye mr-2"></i> Our Mission</h3>
-                    <p class="text-sm">To bridge the gap between local talent and global educational standards.</p>
-                </div>
-                <div class="bg-slate-900/50 p-4 rounded-2xl border border-white/5">
-                    <h3 class="text-cyan-400 font-bold mb-2"><i class="fas fa-eye mr-2"></i> Our Vision</h3>
-                    <p class="text-sm">A future where Uzbek students lead in global innovation and research.</p>
+    <div id="aboutModal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-xl p-4">
+        <div class="glass-panel p-10 max-w-2xl w-full relative overflow-y-auto max-h-[90vh]">
+            <button id="closeAboutBtn" class="absolute top-6 right-6 text-slate-400 hover:text-white transition">
+                <i class="fa-solid fa-xmark text-2xl"></i>
+            </button>
+            <h2 class="text-4xl font-bold mb-6 text-cyan-400">About Global Uzbek Education</h2>
+            <div class="space-y-6 text-slate-300 leading-relaxed">
+                <p>The <span class="text-white font-bold">Global Uzbek Education Research Center</span> is dedicated to advancing the educational landscape of Uzbekistan.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+                    <div class="bg-slate-900/50 p-4 rounded-2xl border border-white/5">
+                        <h3 class="text-cyan-400 font-bold mb-2"><i class="fas fa-bullseye mr-2"></i> Our Mission</h3>
+                        <p class="text-sm">To bridge the gap between local talent and global educational standards.</p>
+                    </div>
+                    <div class="bg-slate-900/50 p-4 rounded-2xl border border-white/5">
+                        <h3 class="text-cyan-400 font-bold mb-2"><i class="fas fa-eye mr-2"></i> Our Vision</h3>
+                        <p class="text-sm">A future where Uzbek students lead in global innovation and research.</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    const aboutModal = document.getElementById('aboutModal');
-    const openAboutBtn = document.getElementById('openAboutBtn');
-    const closeAboutBtn = document.getElementById('closeAboutBtn');
+    <script>
+        const aboutModal = document.getElementById('aboutModal');
+        const openAboutBtn = document.getElementById('openAboutBtn');
+        const closeAboutBtn = document.getElementById('closeAboutBtn');
 
-    openAboutBtn.onclick = () => aboutModal.classList.remove('hidden');
-    closeAboutBtn.onclick = () => aboutModal.classList.add('hidden');
+        openAboutBtn.onclick = () => aboutModal.classList.remove('hidden');
+        closeAboutBtn.onclick = () => aboutModal.classList.add('hidden');
+        window.onclick = (e) => { if (e.target == aboutModal) aboutModal.classList.add('hidden'); };
 
-    // Close if they click the dark background
-    window.addEventListener('click', (event) => {
-        if (event.target == aboutModal) {
-            aboutModal.classList.add('hidden');
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+
+        if (localStorage.getItem('theme') === 'light') {
+            body.classList.add('light-mode');
+            themeToggle.classList.replace('fa-moon', 'fa-sun');
         }
-    });
-    const themeToggle = document.getElementById('themeToggle');
-    const body = document.body;
 
-    // Check for saved theme
-    if (localStorage.getItem('theme') === 'light') {
-        body.classList.add('light-mode');
-        themeToggle.classList.replace('fa-moon', 'fa-sun');
-    }
-
-    themeToggle.onclick = () => {
-        body.classList.toggle('light-mode');
-        const isLight = body.classList.contains('light-mode');
-        
-        // Switch icon
-        themeToggle.classList.toggle('fa-moon', !isLight);
-        themeToggle.classList.toggle('fa-sun', isLight);
-        
-        // Save preference
-        localStorage.setItem('theme', isLight ? 'light' : 'dark');
-    };
-</script>
-
+        themeToggle.onclick = () => {
+            body.classList.toggle('light-mode');
+            const isLight = body.classList.contains('light-mode');
+            themeToggle.classList.toggle('fa-moon', !isLight);
+            themeToggle.classList.toggle('fa-sun', isLight);
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        };
+    </script>
 </body>
 </html>
