@@ -141,18 +141,21 @@
                 const grid = document.getElementById('programsGrid');
                 grid.innerHTML = ""; 
 
-                // Get the current language memory
+                // Get the memory
                 const lang = localStorage.getItem('preferredLang') || 'uz';
                 
-                // Define which "index" to use (0 = uz, 1 = en, 2 = tr)
+                // Map: uz -> index 0, en -> index 1, tr -> index 2
                 const langIndex = lang === 'uz' ? 0 : (lang === 'en' ? 1 : 2);
+                
+                // Get the translations for buttons from our dictionary
+                const t = pageTranslations[lang];
 
                 programsData.forEach((prog, index) => {
-                    // Split the titles and descriptions by the "|" symbol
+                    // Split the database text by the "|" character
                     const titleParts = prog.t.split('|');
                     const descParts = prog.s.split('|');
 
-                    // Pick the right language, or fall back to English if the translation is missing
+                    // Pick the right language. If it's missing, fall back to the first one.
                     const displayTitle = (titleParts[langIndex] || titleParts[0]).trim();
                     const displayDesc = (descParts[langIndex] || descParts[0]).trim();
 
@@ -161,8 +164,8 @@
                             <h3 class="text-2xl font-bold mb-4 text-cyan-400">${displayTitle}</h3>
                             <p class="text-slate-300 mb-8 flex-grow">${displayDesc}</p>
                             <div class="flex gap-2">
-                                <button onclick="showDetails(${index})" class="flex-1 py-3 border border-cyan-500/30 rounded-xl text-sm hover:bg-cyan-500/10 transition">Learn More</button>
-                                <button onclick="openEnroll(${index})" class="flex-1 py-3 bg-cyan-500 text-slate-950 font-bold rounded-xl text-sm hover:bg-cyan-400 transition">Enroll Now</button>
+                                <button onclick="showDetails(${index})" class="flex-1 py-3 border border-cyan-500/30 rounded-xl text-sm hover:bg-cyan-500/10 transition">${t.learnMore}</button>
+                                <button onclick="openEnroll(${index})" class="flex-1 py-3 bg-cyan-500 text-slate-950 font-bold rounded-xl text-sm hover:bg-cyan-400 transition">${t.enroll}</button>
                             </div>
                         </div>`;
                 });
