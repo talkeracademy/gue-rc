@@ -10,8 +10,24 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
         body { margin: 0; background: #020617; font-family: 'Inter', sans-serif; color: white; min-height: 100vh; }
-        .glass-panel { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 24px; }
         
+        .glass-panel { 
+            background: rgba(15, 23, 42, 0.4); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            border-radius: 24px; 
+            transition: all 0.3s ease;
+        }
+
+        /* Modern Card Styling */
+        .admin-card { position: relative; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .admin-card:hover { border-color: rgba(34, 211, 238, 0.3); background: rgba(15, 23, 42, 0.6); }
+
+        /* The 6-dot handle */
+        .drag-handle { cursor: grab; color: rgba(255,255,255,0.2); transition: color 0.2s; }
+        .drag-handle:hover { color: #22d3ee; }
+        .drag-handle:active { cursor: grabbing; }
+
         /* Custom Notification Styling */
         #custom-alert {
             position: fixed;
@@ -23,10 +39,7 @@
             opacity: 0;
             pointer-events: none;
         }
-        #custom-alert.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
+        #custom-alert.show { transform: translateY(0); opacity: 1; }
         .alert-glass {
             background: rgba(34, 211, 238, 0.15);
             backdrop-filter: blur(15px);
@@ -41,26 +54,27 @@
     </style>
 </head>
 <body class="p-8">
-    <nav class="flex justify-between items-center mb-10">
-        <a href="admin.html" class="text-cyan-400 hover:text-white transition flex items-center gap-2">
-            <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+    <nav class="flex justify-between items-center mb-10 max-w-7xl mx-auto">
+        <a href="admin.html" class="text-slate-400 hover:text-cyan-400 transition flex items-center gap-2">
+            <i class="fa-solid fa-arrow-left"></i> Dashboard
         </a>
         <div class="flex gap-4">
-            <button id="addBoxBtn" class="bg-cyan-500 text-slate-950 px-6 py-2 rounded-xl font-bold hover:bg-cyan-400 transition flex items-center gap-2">
-                <i class="fa-solid fa-plus"></i> Add New Box
+            <button id="addBoxBtn" class="bg-white/5 hover:bg-white/10 text-white px-6 py-2 rounded-xl border border-white/10 transition flex items-center gap-2">
+                <i class="fa-solid fa-plus text-cyan-400"></i> New Program
             </button>
-            <button id="syncBtn" class="bg-emerald-500 text-slate-950 px-6 py-2 rounded-xl font-bold hover:bg-emerald-400 transition flex items-center gap-2">
-                <i class="fa-solid fa-cloud-arrow-up"></i> Sync Changes
+            <button id="syncBtn" class="bg-cyan-500 text-slate-950 px-6 py-2 rounded-xl font-bold hover:bg-cyan-400 transition shadow-lg shadow-cyan-500/20">
+                Sync Changes
             </button>
         </div>
     </nav>
 
-    <div id="academy-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    <div id="academy-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+        </div>
 
     <div id="custom-alert">
         <div class="alert-glass">
             <i id="alert-icon" class="fa-solid fa-circle-check text-cyan-400 text-xl"></i>
-            <p id="alert-message" class="text-white font-bold text-sm">Action Successful!</p>
+            <p id="alert-message" class="text-white font-bold text-sm"></p>
         </div>
     </div>
 
@@ -89,17 +103,45 @@
             const alert = document.getElementById('custom-alert');
             const icon = document.getElementById('alert-icon');
             document.getElementById('alert-message').innerText = msg;
-            
-            if (isError) {
-                icon.className = "fa-solid fa-circle-xmark text-red-400 text-xl";
-                alert.querySelector('.alert-glass').style.borderColor = "rgba(248, 113, 113, 0.3)";
-            } else {
-                icon.className = "fa-solid fa-circle-check text-cyan-400 text-xl";
-                alert.querySelector('.alert-glass').style.borderColor = "rgba(34, 211, 238, 0.3)";
-            }
-
+            icon.className = isError ? "fa-solid fa-circle-xmark text-red-400 text-xl" : "fa-solid fa-circle-check text-cyan-400 text-xl";
             alert.classList.add('show');
             setTimeout(() => alert.classList.remove('show'), 3000);
+        }
+
+        function createBox(data = {}) {
+            const div = document.createElement('div');
+            div.className = "glass-panel admin-card p-6 flex flex-col gap-4";
+            div.innerHTML = `
+                <div class="flex justify-between items-center border-b border-white/5 pb-3">
+                    <div class="drag-handle px-2">
+                        <i class="fa-solid fa-grip-vertical text-lg"></i>
+                    </div>
+                    <button class="delete-btn text-slate-500 hover:text-red-400 transition">
+                        <i class="fa-solid fa-trash-can text-sm"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Program Title</label>
+                        <input type="text" class="title bg-transparent border-b border-white/10 w-full font-bold text-cyan-400 outline-none focus:border-cyan-400 py-1" value="${data.t || ''}">
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Image URL (Optional)</label>
+                        <input type="text" class="img bg-transparent border-b border-white/10 w-full text-xs text-slate-300 outline-none focus:border-white/30 py-1" value="${data.img || ''}">
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Short Summary</label>
+                        <textarea class="desc bg-slate-900/50 border border-white/10 w-full text-xs p-3 h-20 rounded-xl outline-none focus:border-cyan-400 mt-1">${data.s || ''}</textarea>
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Full Description (Modal)</label>
+                        <textarea class="longDesc bg-slate-900/50 border border-white/10 w-full text-xs p-3 h-32 rounded-xl outline-none focus:border-cyan-400 mt-1">${data.l || ''}</textarea>
+                    </div>
+                </div>
+            `;
+            div.querySelector('.delete-btn').onclick = () => div.remove();
+            listEl.appendChild(div);
         }
 
         async function loadAcademy() {
@@ -109,31 +151,15 @@
                 if (snap.exists()) {
                     const programs = snap.data().programs || [];
                     listEl.innerHTML = '';
-                    programs.forEach((prog, index) => createBox(index, prog));
+                    programs.forEach(prog => createBox(prog));
                 }
-            } catch (error) { console.error("Error loading:", error); }
+            } catch (error) { showToast("Load Error: " + error.message, true); }
         }
 
-        function createBox(id, data = {}) {
-            const div = document.createElement('div');
-            div.className = "glass-panel p-6 relative group cursor-move";
-            div.innerHTML = `
-                <button class="delete-btn absolute -top-2 -right-2 bg-red-500 text-white w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 transition z-10">×</button>
-                <div class="space-y-3">
-                    <input type="text" class="title bg-transparent border-b border-white/10 w-full font-bold text-cyan-400 outline-none" value="${data.t || ''}" placeholder="Program Title">
-                    <input type="text" class="img bg-transparent border-b border-white/10 w-full text-xs outline-none" value="${data.img || ''}" placeholder="Image URL">
-                    <textarea class="desc bg-slate-900/50 border border-white/10 w-full text-xs p-2 h-20 rounded outline-none" placeholder="Short description">${data.s || ''}</textarea>
-                    <textarea class="longDesc bg-slate-900/50 border border-white/10 w-full text-xs p-2 h-32 rounded outline-none" placeholder="Full Details">${data.l || ''}</textarea>
-                </div>
-            `;
-            div.querySelector('.delete-btn').onclick = () => div.remove();
-            listEl.appendChild(div);
-        }
-
-        document.getElementById('addBoxBtn').onclick = () => createBox(Date.now(), {});
+        document.getElementById('addBoxBtn').onclick = () => createBox({});
 
         document.getElementById('syncBtn').onclick = async () => {
-            const boxes = listEl.querySelectorAll('.glass-panel');
+            const boxes = listEl.querySelectorAll('.admin-card');
             const programsArray = Array.from(boxes).map(b => ({
                 t: b.querySelector('.title').value,
                 img: b.querySelector('.img').value,
@@ -143,11 +169,17 @@
 
             try {
                 await setDoc(doc(db, "content", "academy"), { programs: programsArray });
-                showToast("Academy Synchronized Successfully!");
+                showToast("Changes Synced to Live Site!");
             } catch (e) { showToast("Sync Error: " + e.message, true); }
         };
 
-        new Sortable(listEl, { animation: 150 });
+        // Sortable logic with the Handle restriction
+        new Sortable(listEl, { 
+            animation: 150,
+            handle: '.drag-handle', // This ensures only the dots can move the box
+            ghostClass: 'opacity-50'
+        });
+
         loadAcademy();
     </script>
 </body>
