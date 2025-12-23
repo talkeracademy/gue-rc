@@ -43,25 +43,27 @@
 
         <section id="editorSection" class="space-y-8">
             <div class="flex justify-between items-end">
-                <h2 class="text-2xl font-bold">Manage Boxes</h2>
+                <h2 class="text-2xl font-bold text-white">Manage Boxes</h2>
                 <div class="flex space-x-4">
                     <button onclick="addProgramBox()" class="bg-slate-800 text-cyan-400 border border-cyan-500/30 px-6 py-2 rounded-xl font-bold hover:bg-cyan-500/10 transition">
                         <i class="fa-solid fa-plus mr-2"></i> Add Box
                     </button>
-                    <button id="saveBtn" class="bg-cyan-500 text-slate-950 px-8 py-2 rounded-xl font-bold hover:bg-cyan-400 transition">
+                    <button id="saveBtn" class="bg-cyan-500 text-slate-950 px-8 py-2 rounded-xl font-bold hover:bg-cyan-400 transition shadow-[0_0_20px_rgba(34,211,238,0.3)]">
                         Sync Changes
                     </button>
                 </div>
             </div>
-            
-            <div id="adminProgramsContainer" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                </div>
+            <div id="adminProgramsContainer" class="grid grid-cols-1 lg:grid-cols-3 gap-6"></div>
         </section>
 
         <section id="appsSection" class="hidden glass-panel p-8">
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <h2 class="text-2xl font-bold text-cyan-400">Student Applications</h2>
-                <button onclick="exportToCSV()" class="text-sm bg-green-600/20 text-green-400 border border-green-500/30 px-4 py-2 rounded-lg">Export CSV</button>
+                <div class="flex w-full md:w-auto gap-4">
+                    <input type="text" id="appSearch" placeholder="Search name, email, or program..." 
+                           class="bg-slate-800/50 border border-white/10 px-4 py-2 rounded-lg text-sm outline-none focus:border-cyan-400 w-full md:w-64">
+                    <button onclick="exportToCSV()" class="text-sm bg-green-600/20 text-green-400 border border-green-500/30 px-4 py-2 rounded-lg whitespace-nowrap">Export CSV</button>
+                </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
@@ -101,7 +103,6 @@
 
         let currentCategory = 'academy';
 
-        // --- AUTH ---
         onAuthStateChanged(auth, (user) => {
             if (!user) window.location.href = 'index.html';
             loadData('academy');
@@ -109,16 +110,13 @@
 
         document.getElementById('logoutBtn').onclick = () => signOut(auth);
 
-        // --- TAB SWITCHER LOGIC ---
         window.switchCategory = (cat, btn) => {
             currentCategory = cat;
             document.getElementById('editorSection').classList.remove('hidden');
             document.getElementById('appsSection').classList.add('hidden');
-            document.getElementById('currentViewLabel').innerText = cat;
-            
+            document.getElementById('currentViewLabel').innerText = cat.charAt(0).toUpperCase() + cat.slice(1);
             document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('tab-active', 'text-slate-950'));
             btn.classList.add('tab-active');
-            
             loadData(cat);
         };
 
@@ -129,7 +127,6 @@
             loadApplications();
         };
 
-        // --- BOX MANAGEMENT ---
         async function loadData(cat) {
             const snap = await getDoc(doc(db, "content", cat));
             const container = document.getElementById('adminProgramsContainer');
@@ -141,44 +138,44 @@
 
         window.addProgramBox = (data = {t:'', s:'', l:'', img:''}) => {
             const container = document.getElementById('adminProgramsContainer');
-            const id = Date.now() + Math.random();
             const box = document.createElement('div');
             box.className = "program-admin-card glass-panel p-6 space-y-4 relative border border-white/5";
-            box.id = `box-${id}`;
             box.innerHTML = `
-                <div class="drag-handle text-slate-600 hover:text-cyan-400 mb-2"><i class="fa-solid fa-grip-lines"></i></div>
-                <button onclick="this.parentElement.remove()" class="absolute top-6 right-6 text-red-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>
-                
+                <div class="drag-handle text-slate-600 hover:text-cyan-400 mb-2 transition-colors">
+                    <i class="fa-solid fa-grip-lines"></i>
+                </div>
+                <button onclick="this.parentElement.remove()" class="absolute top-6 right-6 text-red-400 hover:text-red-500 transition-colors">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
                 <input type="text" value="${data.t}" placeholder="Title (UZ | EN | TR)" class="prog-t w-full bg-slate-800/50 p-3 rounded-xl border border-white/10 text-white">
-                
                 <div class="image-drop-zone w-full bg-slate-800/30 border-2 border-dashed border-white/10 rounded-xl p-4 text-center hover:border-cyan-400 transition" 
                      ondragover="event.preventDefault();" ondrop="handleDrop(event, this)">
                     <input type="text" value="${data.img || ''}" placeholder="Image URL" class="prog-img w-full bg-transparent text-xs text-slate-400 text-center mb-1 pointer-events-none">
                     <p class="text-[10px] uppercase tracking-widest text-slate-500">Drag Image Here</p>
                 </div>
-
                 <textarea placeholder="Short Summary" class="prog-s w-full bg-slate-800/50 p-3 rounded-xl h-20 border border-white/10 text-white">${data.s}</textarea>
                 <textarea placeholder="Full Details" class="prog-l w-full bg-slate-800/50 p-3 rounded-xl h-32 border border-white/10 text-white">${data.l}</textarea>
             `;
             container.appendChild(box);
         };
 
-        // --- IMAGE UPLOAD ---
         window.handleDrop = async (e, zone) => {
             e.preventDefault();
             const file = e.dataTransfer.files[0];
             if(!file) return;
-            
             const input = zone.querySelector('.prog-img');
             input.value = "Uploading...";
-            
-            const sRef = ref(storage, `uploads/${Date.now()}_${file.name}`);
-            await uploadBytes(sRef, file);
-            const url = await getDownloadURL(sRef);
-            input.value = url;
+            try {
+                const sRef = ref(storage, `uploads/${Date.now()}_${file.name}`);
+                await uploadBytes(sRef, file);
+                const url = await getDownloadURL(sRef);
+                input.value = url;
+            } catch (err) {
+                input.value = "";
+                alert("Upload failed: " + err.message);
+            }
         };
 
-        // --- SAVE ---
         document.getElementById('saveBtn').onclick = async () => {
             const cards = document.querySelectorAll('.program-admin-card');
             const progs = Array.from(cards).map(c => ({
@@ -187,28 +184,42 @@
                 s: c.querySelector('.prog-s').value,
                 l: c.querySelector('.prog-l').value
             }));
-            await setDoc(doc(db, "content", currentCategory), { programs: progs });
-            alert("Saved to " + currentCategory);
+            try {
+                await setDoc(doc(db, "content", currentCategory), { programs: progs });
+                alert("Changes Synced to " + currentCategory.toUpperCase());
+            } catch (err) {
+                alert("Error saving: " + err.message);
+            }
         };
 
-        // --- APPLICATIONS ---
         function loadApplications() {
+            const list = document.getElementById('applicationList');
+            const searchInput = document.getElementById('appSearch');
             onSnapshot(query(collection(db, "applications"), orderBy("date", "desc")), (snap) => {
-                const list = document.getElementById('applicationList');
-                list.innerHTML = "";
-                snap.forEach(d => {
-                    const a = d.data();
-                    list.innerHTML += `<tr class="border-b border-white/5">
-                        <td class="p-4 text-xs font-bold text-cyan-500 uppercase">${a.category || 'N/A'}</td>
-                        <td class="p-4"><b>${a.name}</b><br><span class="text-[10px] opacity-50">${a.email}</span></td>
-                        <td class="p-4 text-sm">${a.program}</td>
-                        <td class="p-4 text-[10px]">${new Date(a.date).toLocaleDateString()}</td>
-                    </tr>`;
-                });
+                let allApps = [];
+                snap.forEach(d => allApps.push(d.data()));
+                const render = (data) => {
+                    list.innerHTML = "";
+                    data.forEach(a => {
+                        list.innerHTML += `<tr class="border-b border-white/5 hover:bg-white/5 transition">
+                            <td class="p-4 text-xs font-bold text-cyan-500 uppercase">${a.category || 'N/A'}</td>
+                            <td class="p-4"><b>${a.name}</b><br><span class="text-[10px] opacity-50">${a.email}</span></td>
+                            <td class="p-4 text-sm">${a.program}</td>
+                            <td class="p-4 text-[10px]">${new Date(a.date).toLocaleDateString()}</td>
+                        </tr>`;
+                    });
+                };
+                render(allApps);
+                searchInput.oninput = (e) => {
+                    const term = e.target.value.toLowerCase();
+                    render(allApps.filter(a => 
+                        a.name.toLowerCase().includes(term) || 
+                        a.email.toLowerCase().includes(term) ||
+                        (a.program && a.program.toLowerCase().includes(term))
+                    ));
+                };
             });
         }
-
-        // Initialize Sorting
         Sortable.create(document.getElementById('adminProgramsContainer'), { animation: 150, handle: '.drag-handle' });
     </script>
 </body>
