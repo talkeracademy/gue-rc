@@ -269,6 +269,9 @@
 
         window.changeLang = (lang) => {
             const data = translations[lang];
+            if (!data) return; // Safety check
+
+            // Update the UI elements
             document.getElementById('currentFlag').src = data.flag;
             document.getElementById('main-title').innerText = data.title;
             document.getElementById('main-subtitle').innerText = data.subtitle;
@@ -280,13 +283,16 @@
             document.getElementById('txt-partners').innerText = data.partners;
             document.getElementById('txt-articles').innerText = data.articles;
             document.getElementById('txt-gallery').innerText = data.gallery;
-            localStorage.setItem('preferredLang', lang);
+
+            // KEY DEVOPS STEP: Save the "State" to browser memory
+            localStorage.setItem('preferredLang', lang); 
         };
 
-        // Load saved language or default to UZ
+        // Ensure this listener is at the bottom of your script
         document.addEventListener('DOMContentLoaded', () => {
+            // Check memory, if empty default to 'uz'
             const savedLang = localStorage.getItem('preferredLang') || 'uz';
-            changeLang(savedLang);
+            window.changeLang(savedLang);
         });
     </script>
 
