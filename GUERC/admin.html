@@ -3,25 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard | GUERC</title>
+    <title>Master Admin | GUERC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
-        body { margin: 0; background: #020617; font-family: 'Inter', sans-serif; color: white; overflow: hidden; height: 100vh; }
+        body { margin: 0; background: #020617; font-family: 'Inter', sans-serif; color: white; min-height: 100vh; }
         #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; }
         .glass-panel { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 32px; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.4s ease; text-decoration: none; color: white; text-align: center; }
-        .nav-item:hover { transform: scale(1.1); color: #22d3ee; }
-        .nav-item i { font-size: 3rem; margin-bottom: 12px; }
+        .tab-active { background: #22d3ee !important; color: #020617 !important; font-weight: bold; }
+        input, textarea { outline: none; transition: all 0.3s ease; }
+        input:focus, textarea:focus { border-color: #22d3ee !important; background-color: rgba(15, 23, 42, 0.8) !important; }
+        .drag-handle { cursor: grab; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
     <canvas id="bg-canvas"></canvas>
+
     <nav class="flex justify-between items-center p-10">
         <div>
-            <h1 class="text-4xl font-bold tracking-tight text-cyan-400">Admin Panel</h1>
-            <p class="text-[11px] tracking-[0.5em] uppercase opacity-50 mt-1">Management Hub</p>
+            <h1 class="text-4xl font-bold tracking-tight text-cyan-400">GUERC Master Admin</h1>
+            <p id="currentViewLabel" class="text-[11px] tracking-[0.5em] uppercase opacity-50 mt-1">Teachers Academy</p>
         </div>
         <div class="flex items-center space-x-6">
             <a href="index.html" class="text-xs border border-white/20 px-4 py-2 rounded-full hover:bg-white/10 transition">View Website</a>
@@ -29,50 +33,183 @@
         </div>
     </nav>
 
-    <main class="flex items-center justify-center min-h-[70vh] px-8">
-        <div class="glass-panel grid grid-cols-1 md:grid-cols-2 gap-16 p-20 max-w-4xl w-full">
-            <a href="admin-academy.html" class="nav-item">
-                <i class="fa-solid fa-school-flag text-cyan-400"></i>
-                <span class="font-bold text-xl">Teachers Academy</span>
-                <p class="text-[10px] opacity-40 mt-2 uppercase tracking-widest">Edit Programs</p>
-            </a>
-            <a href="admin-applications.html" class="nav-item">
-                <i class="fa-solid fa-file-invoice text-cyan-400"></i>
-                <span class="font-bold text-xl">Applications</span>
-                <p class="text-[10px] opacity-40 mt-2 uppercase tracking-widest">View & Export Data</p>
-            </a>
+    <main class="max-w-7xl mx-auto px-8 pb-20">
+        <div class="flex space-x-4 mb-10 overflow-x-auto pb-2">
+            <button onclick="switchCategory('academy', this)" class="category-btn tab-active bg-slate-800/50 px-8 py-3 rounded-2xl border border-white/10 transition whitespace-nowrap">Teachers Academy</button>
+            <button onclick="switchCategory('camps', this)" class="category-btn text-slate-400 hover:text-white bg-slate-800/50 px-8 py-3 rounded-2xl border border-white/10 transition whitespace-nowrap">Int. Camps</button>
+            <button onclick="switchCategory('olympics', this)" class="category-btn text-slate-400 hover:text-white bg-slate-800/50 px-8 py-3 rounded-2xl border border-white/10 transition whitespace-nowrap">Int. Olympics</button>
+            <button onclick="showApplications()" class="category-btn text-slate-400 hover:text-white bg-slate-800/50 px-8 py-3 rounded-2xl border border-white/10 transition whitespace-nowrap">View Applications</button>
         </div>
+
+        <section id="editorSection" class="space-y-8">
+            <div class="flex justify-between items-end">
+                <h2 class="text-2xl font-bold">Manage Boxes</h2>
+                <div class="flex space-x-4">
+                    <button onclick="addProgramBox()" class="bg-slate-800 text-cyan-400 border border-cyan-500/30 px-6 py-2 rounded-xl font-bold hover:bg-cyan-500/10 transition">
+                        <i class="fa-solid fa-plus mr-2"></i> Add Box
+                    </button>
+                    <button id="saveBtn" class="bg-cyan-500 text-slate-950 px-8 py-2 rounded-xl font-bold hover:bg-cyan-400 transition">
+                        Sync Changes
+                    </button>
+                </div>
+            </div>
+            
+            <div id="adminProgramsContainer" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                </div>
+        </section>
+
+        <section id="appsSection" class="hidden glass-panel p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-cyan-400">Student Applications</h2>
+                <button onclick="exportToCSV()" class="text-sm bg-green-600/20 text-green-400 border border-green-500/30 px-4 py-2 rounded-lg">Export CSV</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="text-cyan-500 border-b border-white/10 text-sm">
+                            <th class="p-4">Category</th>
+                            <th class="p-4">Student</th>
+                            <th class="p-4">Program</th>
+                            <th class="p-4">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="applicationList" class="text-slate-300"></tbody>
+                </table>
+            </div>
+        </section>
     </main>
 
-    <script>
-        const canvas = document.getElementById('bg-canvas');
-        const ctx = canvas.getContext('2d');
-        let particles = [];
-        function init() {
-            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-            particles = [];
-            for(let i = 0; i < 80; i++) particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4, size: Math.random() * 1.5 + 1 });
-        }
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach((p) => {
-                p.x += p.vx; p.y += p.vy;
-                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
-                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
-                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(34, 211, 238, 0.4)'; ctx.fill();
-            });
-            requestAnimationFrame(animate);
-        }
-        window.addEventListener('resize', init);
-        init(); animate();
-    </script>
-
     <script type="module">
-        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        const auth = getAuth();
-        document.getElementById('logoutBtn').onclick = () => signOut(auth).then(() => window.location.href = 'index.html');
-        onAuthStateChanged(auth, (user) => { if (!user) window.location.href = 'index.html'; });
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3tnoCO0MwfSM-FH95cC52OyUHzaouC8E",
+            authDomain: "guercllc.firebaseapp.com",
+            projectId: "guercllc",
+            storageBucket: "guercllc.firebasestorage.app",
+            messagingSenderId: "450126717624",
+            appId: "1:450126717624:web:4e152e748315b33cc68a4d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        let currentCategory = 'academy';
+
+        // --- AUTH ---
+        onAuthStateChanged(auth, (user) => {
+            if (!user) window.location.href = 'index.html';
+            loadData('academy');
+        });
+
+        document.getElementById('logoutBtn').onclick = () => signOut(auth);
+
+        // --- TAB SWITCHER LOGIC ---
+        window.switchCategory = (cat, btn) => {
+            currentCategory = cat;
+            document.getElementById('editorSection').classList.remove('hidden');
+            document.getElementById('appsSection').classList.add('hidden');
+            document.getElementById('currentViewLabel').innerText = cat;
+            
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('tab-active', 'text-slate-950'));
+            btn.classList.add('tab-active');
+            
+            loadData(cat);
+        };
+
+        window.showApplications = () => {
+            document.getElementById('editorSection').classList.add('hidden');
+            document.getElementById('appsSection').classList.remove('hidden');
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('tab-active'));
+            loadApplications();
+        };
+
+        // --- BOX MANAGEMENT ---
+        async function loadData(cat) {
+            const snap = await getDoc(doc(db, "content", cat));
+            const container = document.getElementById('adminProgramsContainer');
+            container.innerHTML = "";
+            if (snap.exists() && snap.data().programs) {
+                snap.data().programs.forEach(p => addProgramBox(p));
+            }
+        }
+
+        window.addProgramBox = (data = {t:'', s:'', l:'', img:''}) => {
+            const container = document.getElementById('adminProgramsContainer');
+            const id = Date.now() + Math.random();
+            const box = document.createElement('div');
+            box.className = "program-admin-card glass-panel p-6 space-y-4 relative border border-white/5";
+            box.id = `box-${id}`;
+            box.innerHTML = `
+                <div class="drag-handle text-slate-600 hover:text-cyan-400 mb-2"><i class="fa-solid fa-grip-lines"></i></div>
+                <button onclick="this.parentElement.remove()" class="absolute top-6 right-6 text-red-400 hover:text-red-500"><i class="fa-solid fa-trash"></i></button>
+                
+                <input type="text" value="${data.t}" placeholder="Title (UZ | EN | TR)" class="prog-t w-full bg-slate-800/50 p-3 rounded-xl border border-white/10 text-white">
+                
+                <div class="image-drop-zone w-full bg-slate-800/30 border-2 border-dashed border-white/10 rounded-xl p-4 text-center hover:border-cyan-400 transition" 
+                     ondragover="event.preventDefault();" ondrop="handleDrop(event, this)">
+                    <input type="text" value="${data.img || ''}" placeholder="Image URL" class="prog-img w-full bg-transparent text-xs text-slate-400 text-center mb-1 pointer-events-none">
+                    <p class="text-[10px] uppercase tracking-widest text-slate-500">Drag Image Here</p>
+                </div>
+
+                <textarea placeholder="Short Summary" class="prog-s w-full bg-slate-800/50 p-3 rounded-xl h-20 border border-white/10 text-white">${data.s}</textarea>
+                <textarea placeholder="Full Details" class="prog-l w-full bg-slate-800/50 p-3 rounded-xl h-32 border border-white/10 text-white">${data.l}</textarea>
+            `;
+            container.appendChild(box);
+        };
+
+        // --- IMAGE UPLOAD ---
+        window.handleDrop = async (e, zone) => {
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            if(!file) return;
+            
+            const input = zone.querySelector('.prog-img');
+            input.value = "Uploading...";
+            
+            const sRef = ref(storage, `uploads/${Date.now()}_${file.name}`);
+            await uploadBytes(sRef, file);
+            const url = await getDownloadURL(sRef);
+            input.value = url;
+        };
+
+        // --- SAVE ---
+        document.getElementById('saveBtn').onclick = async () => {
+            const cards = document.querySelectorAll('.program-admin-card');
+            const progs = Array.from(cards).map(c => ({
+                t: c.querySelector('.prog-t').value,
+                img: c.querySelector('.prog-img').value,
+                s: c.querySelector('.prog-s').value,
+                l: c.querySelector('.prog-l').value
+            }));
+            await setDoc(doc(db, "content", currentCategory), { programs: progs });
+            alert("Saved to " + currentCategory);
+        };
+
+        // --- APPLICATIONS ---
+        function loadApplications() {
+            onSnapshot(query(collection(db, "applications"), orderBy("date", "desc")), (snap) => {
+                const list = document.getElementById('applicationList');
+                list.innerHTML = "";
+                snap.forEach(d => {
+                    const a = d.data();
+                    list.innerHTML += `<tr class="border-b border-white/5">
+                        <td class="p-4 text-xs font-bold text-cyan-500 uppercase">${a.category || 'N/A'}</td>
+                        <td class="p-4"><b>${a.name}</b><br><span class="text-[10px] opacity-50">${a.email}</span></td>
+                        <td class="p-4 text-sm">${a.program}</td>
+                        <td class="p-4 text-[10px]">${new Date(a.date).toLocaleDateString()}</td>
+                    </tr>`;
+                });
+            });
+        }
+
+        // Initialize Sorting
+        Sortable.create(document.getElementById('adminProgramsContainer'), { animation: 150, handle: '.drag-handle' });
     </script>
 </body>
 </html>

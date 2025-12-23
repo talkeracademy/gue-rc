@@ -45,7 +45,7 @@
 <body>
     <nav class="flex justify-between items-center p-10">
         <a href="index.html" class="text-cyan-400 font-bold hover:text-cyan-500 transition flex items-center gap-2">
-            <i class="fa-solid fa-arrow-left"></i> <span id="nav-back">Back to Home</span>
+            <i class="fa-solid fa-arrow-left"></i> Back to Home
         </a>
         <div class="flex items-center space-x-8 text-2xl">
             <i id="themeToggle" class="fa-solid fa-moon cursor-pointer hover:text-cyan-400 transition"></i>
@@ -54,19 +54,11 @@
 
     <main class="max-w-7xl mx-auto px-8 py-12">
         <div class="glass-panel p-12">
-<<<<<<< Updated upstream
-            <h1 id="page-title" class="text-5xl font-bold mb-4 tracking-tight text-cyan-400">Teachers Academy</h1>
-            <p id="page-subtitle" class="text-xl text-slate-400 mb-12">Empowering educators with global methodologies.</p>
-            
-            <div id="programsGrid" class="grid md:grid-cols-3 gap-8">
-                <div id="db-loading" class="col-span-3 text-center py-20 opacity-50">Connecting to Academy Database...</div>
-=======
             <h1 id="pageMainTitle" class="text-5xl font-bold mb-4 tracking-tight text-cyan-400">Loading...</h1>
             <p id="pageSubTitle" class="text-xl text-slate-400 mb-12">Please wait while we fetch the latest programs.</p>
             
             <div id="programsGrid" class="grid md:grid-cols-3 gap-8">
                 <div class="col-span-3 text-center py-20 opacity-50">Connecting to Database...</div>
->>>>>>> Stashed changes
             </div>
         </div>
     </main>
@@ -83,26 +75,16 @@
     <div id="enrollModal" class="hidden fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-xl p-4">
         <div class="glass-panel p-10 max-w-lg w-full relative">
             <button onclick="closeModal('enrollModal')" class="absolute top-6 right-6 text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-2xl"></i></button>
-<<<<<<< Updated upstream
-            <h2 id="modal-apply-title" class="text-3xl font-bold text-cyan-400 mb-2">Apply Now</h2>
-            <p class="text-slate-400 mb-8"><span id="txt-selected-prog">Selected Program</span>: <span id="displayProgName" class="text-white font-bold"></span></p>
-=======
             <h2 class="text-3xl font-bold text-cyan-400 mb-2">Apply Now</h2>
             <p class="text-slate-400 mb-8">Selected: <span id="displayProgName" class="text-white font-bold"></span></p>
->>>>>>> Stashed changes
             
             <form id="enrollForm" class="space-y-4">
                 <input type="hidden" id="selectedProgramName">
                 <input type="text" id="userName" placeholder="Full Name" required class="w-full bg-slate-800/50 p-3 rounded-xl border border-white/10 text-white outline-none focus:border-cyan-500">
                 <input type="email" id="userEmail" placeholder="Email Address" required class="w-full bg-slate-800/50 p-3 rounded-xl border border-white/10 text-white outline-none focus:border-cyan-500">
                 <input type="tel" id="userPhone" placeholder="Phone Number" required class="w-full bg-slate-800/50 p-3 rounded-xl border border-white/10 text-white outline-none focus:border-cyan-500">
-<<<<<<< Updated upstream
-                <textarea id="userMsg" placeholder="Additional Notes" class="w-full bg-slate-800/50 p-3 rounded-xl h-24 border border-white/10 text-white outline-none focus:border-cyan-500"></textarea>
-                <button id="btn-submit-app" type="submit" class="w-full bg-cyan-500 text-slate-950 font-bold py-4 rounded-xl hover:bg-cyan-400 transition">Submit Application</button>
-=======
                 <textarea id="userMsg" placeholder="Why are you interested in this program?" class="w-full bg-slate-800/50 p-3 rounded-xl h-24 border border-white/10 text-white outline-none focus:border-cyan-500"></textarea>
                 <button type="submit" class="w-full bg-cyan-500 text-slate-950 font-bold py-4 rounded-xl hover:bg-cyan-400 transition shadow-[0_0_20px_rgba(34,211,238,0.3)]">Submit Application</button>
->>>>>>> Stashed changes
             </form>
         </div>
     </div>
@@ -120,7 +102,7 @@
 
         // --- PAGE CONFIGURATION ---
         // Change this for each file: 'academy', 'camps', or 'olympics'
-        const PAGE_ID = 'academy'; 
+        const PAGE_ID = 'camps'; 
 
         const pageContent = {
             'academy': { title: 'Teachers Academy', sub: 'Empowering educators with global methodologies.' },
@@ -141,70 +123,10 @@
         const db = getFirestore(app);
         let programsData = [];
 
-<<<<<<< Updated upstream
-        // --- PERSISTENT LANGUAGE LOGIC ---
-        const pageTranslations = {
-            uz: {
-                back: "Bosh sahifaga qaytish",
-                title: "O'qituvchilar akademiyasi",
-                subtitle: "O'qituvchilarni global metodikalar bilan qo'llab-quvvatlash",
-                loading: "Akademiya ma'lumotlar bazasiga ulanmoqda...",
-                learnMore: "Batafsil",
-                enroll: "Ro'yxatdan o'tish",
-                applyNow: "Hoziroq topshiring",
-                selected: "Tanlangan dastur",
-                submit: "Arizani yuborish"
-            },
-            en: {
-                back: "Back to Home",
-                title: "Teachers Academy",
-                subtitle: "Empowering educators with global methodologies.",
-                loading: "Connecting to Academy Database...",
-                learnMore: "Learn More",
-                enroll: "Enroll Now",
-                applyNow: "Apply Now",
-                selected: "Selected Program",
-                submit: "Submit Application"
-            },
-            tr: {
-                back: "Ana Sayfaya Dön",
-                title: "Öğretmen Akademisi",
-                subtitle: "Eğitimcileri küresel metodolojilerle güçlendirmek.",
-                loading: "Akademi Veritabanına Bağlanılıyor...",
-                learnMore: "Daha Fazla",
-                enroll: "Kayıt Ol",
-                applyNow: "Şimdi Başvur",
-                selected: "Seçilen Program",
-                submit: "Başvuruyu Gönder"
-            }
-        };
-
-        function applyLanguage() {
-            const lang = localStorage.getItem('preferredLang') || 'uz';
-            const t = pageTranslations[lang];
-
-            document.getElementById('nav-back').innerText = t.back;
-            document.getElementById('page-title').innerText = t.title;
-            document.getElementById('page-subtitle').innerText = t.subtitle;
-            if(document.getElementById('db-loading')) document.getElementById('db-loading').innerText = t.loading;
-            document.getElementById('modal-apply-title').innerText = t.applyNow;
-            document.getElementById('txt-selected-prog').innerText = t.selected;
-            document.getElementById('btn-submit-app').innerText = t.submit;
-            
-            // This global variable can be used for the dynamically loaded grid
-            window.currentLang = lang;
-        }
-
-        // Apply translations on load
-        document.addEventListener('DOMContentLoaded', applyLanguage);
-
-        // Dynamic Toast Function
-=======
         // Set UI Titles
         document.getElementById('pageMainTitle').innerText = pageContent[PAGE_ID].title;
         document.getElementById('pageSubTitle').innerText = pageContent[PAGE_ID].sub;
 
->>>>>>> Stashed changes
         function showToast(msg, isError = false) {
             const alert = document.getElementById('custom-alert');
             const icon = document.getElementById('alert-icon');
@@ -220,20 +142,6 @@
                 programsData = doc.data().programs || [];
                 const grid = document.getElementById('programsGrid');
                 grid.innerHTML = ""; 
-<<<<<<< Updated upstream
-                
-                const lang = localStorage.getItem('preferredLang') || 'uz';
-                const t = pageTranslations[lang];
-
-                programsData.forEach((prog, index) => {
-                    grid.innerHTML += `
-                        <div class="training-card bg-slate-900/40 p-8 rounded-3xl border border-white/5 flex flex-col h-full">
-                            <h3 class="text-2xl font-bold mb-4 text-cyan-400">${prog.t}</h3>
-                            <p class="text-slate-300 mb-8 flex-grow">${prog.s}</p>
-                            <div class="flex gap-2">
-                                <button onclick="showDetails(${index})" class="flex-1 py-3 border border-cyan-500/30 rounded-xl text-sm hover:bg-cyan-500/10 transition">${t.learnMore}</button>
-                                <button onclick="openEnroll(${index})" class="flex-1 py-3 bg-cyan-500 text-slate-950 font-bold rounded-xl text-sm hover:bg-cyan-400 transition">${t.enroll}</button>
-=======
 
                 const lang = localStorage.getItem('preferredLang') || 'en';
                 const langIndex = lang === 'uz' ? 0 : (lang === 'en' ? 1 : 2);
@@ -254,7 +162,6 @@
                                     <button onclick="showDetails(${index})" class="flex-1 py-3 border border-cyan-500/30 rounded-xl text-sm hover:bg-cyan-500/10 transition">Details</button>
                                     <button onclick="openEnroll(${index})" class="flex-1 py-3 bg-cyan-500 text-slate-950 font-bold rounded-xl text-sm hover:bg-cyan-400 transition">Register</button>
                                 </div>
->>>>>>> Stashed changes
                             </div>
                         </div>`;
                 });
