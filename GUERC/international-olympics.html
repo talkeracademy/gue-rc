@@ -10,42 +10,20 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
         body { margin: 0; background: #020617; font-family: 'Inter', sans-serif; color: white; transition: background-color 0.5s ease; min-height: 100vh; }
         body.light-mode { background: #f8fafc; color: #0f172a; }
-        
-        .glass-panel { 
-            background: rgba(15, 23, 42, 0.6); 
-            backdrop-filter: blur(20px); 
-            border: 1px solid rgba(255, 255, 255, 0.1); 
-            border-radius: 32px; 
-        }
-        
-        body.light-mode .glass-panel { 
-            background: rgba(255, 255, 255, 0.85); 
-            border: 1px solid rgba(0, 0, 0, 0.05); 
-        }
-
+        .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 32px; }
+        body.light-mode .glass-panel { background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(0, 0, 0, 0.05); }
         .training-card { transition: all 0.3s ease; overflow: hidden; }
         .training-card:hover { transform: translateY(-5px); border-color: rgba(34, 211, 238, 0.3); }
-        
         .hidden { display: none !important; }
-
-        #custom-alert {
-            position: fixed; bottom: 30px; right: 30px; z-index: 2000;
-            transform: translateY(100px); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            opacity: 0; pointer-events: none;
-        }
+        #custom-alert { position: fixed; bottom: 30px; right: 30px; z-index: 2000; transform: translateY(100px); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0; pointer-events: none; }
         #custom-alert.show { transform: translateY(0); opacity: 1; }
-        .alert-glass {
-            background: rgba(34, 211, 238, 0.15); backdrop-filter: blur(15px);
-            border: 1px solid rgba(34, 211, 238, 0.3); padding: 1rem 2rem;
-            border-radius: 20px; display: flex; align-items: center; gap: 12px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
+        .alert-glass { background: rgba(34, 211, 238, 0.15); backdrop-filter: blur(15px); border: 1px solid rgba(34, 211, 238, 0.3); padding: 1rem 2rem; border-radius: 20px; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
     <nav class="flex justify-between items-center p-10">
-        <a href="index.html" class="text-cyan-400 font-bold hover:text-cyan-500 transition flex items-center gap-2">
-            <i class="fa-solid fa-arrow-left"></i> Back to Home
+        <a href="index.html" class="...">
+            <i class="fa-solid fa-arrow-left"></i> <span id="nav-back-text">Back to Home</span>
         </a>
         <div class="flex items-center space-x-8 text-2xl">
             <i id="themeToggle" class="fa-solid fa-moon cursor-pointer hover:text-cyan-400 transition"></i>
@@ -55,7 +33,7 @@
     <main class="max-w-7xl mx-auto px-8 py-12">
         <div class="glass-panel p-12">
             <h1 id="pageMainTitle" class="text-5xl font-bold mb-4 tracking-tight text-cyan-400">Loading...</h1>
-            <p id="pageSubTitle" class="text-xl text-slate-400 mb-12">Please wait while we fetch the latest programs.</p>
+            <p id="pageSubTitle" class="text-xl text-slate-400 mb-12">Please wait...</p>
             
             <div id="programsGrid" class="grid md:grid-cols-3 gap-8">
                 <div class="col-span-3 text-center py-20 opacity-50">Connecting to Database...</div>
@@ -75,16 +53,16 @@
     <div id="enrollModal" class="hidden fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-xl p-4">
         <div class="glass-panel p-10 max-w-lg w-full relative">
             <button onclick="closeModal('enrollModal')" class="absolute top-6 right-6 text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-2xl"></i></button>
-            <h2 class="text-3xl font-bold text-cyan-400 mb-2">Apply Now</h2>
-            <p class="text-slate-400 mb-8">Selected: <span id="displayProgName" class="text-white font-bold"></span></p>
+            <h2 id="modal-apply-title" class="text-3xl font-bold text-cyan-400 mb-2">Apply Now</h2>
+            <p class="text-slate-400 mb-8"><span id="txt-selected-prog">Selected</span>: <span id="displayProgName" class="text-white font-bold"></span></p>
             
             <form id="enrollForm" class="space-y-4">
                 <input type="hidden" id="selectedProgramName">
                 <input type="text" id="userName" placeholder="Full Name" required class="w-full bg-slate-800/50 p-3 rounded-xl border border-white/10 text-white outline-none focus:border-cyan-500">
                 <input type="email" id="userEmail" placeholder="Email Address" required class="w-full bg-slate-800/50 p-3 rounded-xl border border-white/10 text-white outline-none focus:border-cyan-500">
                 <input type="tel" id="userPhone" placeholder="Phone Number" required class="w-full bg-slate-800/50 p-3 rounded-xl border border-white/10 text-white outline-none focus:border-cyan-500">
-                <textarea id="userMsg" placeholder="Why are you interested in this program?" class="w-full bg-slate-800/50 p-3 rounded-xl h-24 border border-white/10 text-white outline-none focus:border-cyan-500"></textarea>
-                <button type="submit" class="w-full bg-cyan-500 text-slate-950 font-bold py-4 rounded-xl hover:bg-cyan-400 transition shadow-[0_0_20px_rgba(34,211,238,0.3)]">Submit Application</button>
+                <textarea id="userMsg" placeholder="Additional Notes" class="w-full bg-slate-800/50 p-3 rounded-xl h-24 border border-white/10 text-white outline-none focus:border-cyan-500"></textarea>
+                <button id="btn-submit-app" type="submit" class="w-full bg-cyan-500 text-slate-950 font-bold py-4 rounded-xl hover:bg-cyan-400 transition">Submit Application</button>
             </form>
         </div>
     </div>
@@ -100,15 +78,8 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // --- PAGE CONFIGURATION ---
-        // Change this for each file: 'academy', 'camps', or 'olympics'
-        const PAGE_ID = 'olympics'; 
-
-        const pageContent = {
-            'academy': { title: 'Teachers Academy', sub: 'Empowering educators with global methodologies.' },
-            'camps': { title: 'International Camps', sub: 'Explore the world while learning new skills.' },
-            'olympics': { title: 'International Olympics', sub: 'Compete at the highest level globally.' }
-        };
+        // Must match 'olympiads' in admin.html and Firestore document ID
+        const PAGE_ID = 'olympiads'; 
 
         const firebaseConfig = {
             apiKey: "AIzaSyB3tnoCO0MwfSM-FH95cC52OyUHzaouC8E", 
@@ -123,9 +94,11 @@
         const db = getFirestore(app);
         let programsData = [];
 
-        // Set UI Titles
-        document.getElementById('pageMainTitle').innerText = pageContent[PAGE_ID].title;
-        document.getElementById('pageSubTitle').innerText = pageContent[PAGE_ID].sub;
+        const pageTranslations = {
+            uz: { back: "Bosh sahifaga qaytish", olympiads: "Xalqaro olimpiadalar", olympiadsSub: "Dunyoning eng nufuzli olimpiadalarida ishtirok eting.", learnMore: "Batafsil", enroll: "Ro'yxatdan o'tish", applyNow: "Hoziroq topshiring", selected: "Tanlangan", submit: "Yuborish", success: "Muvaffaqiyatli yuborildi!" },
+            en: { back: "Back to Home", olympiads: "International Olympics", olympiadsSub: "Compete at the highest level globally.", learnMore: "Learn More", enroll: "Register", applyNow: "Apply Now", selected: "Selected", submit: "Submit Application", success: "Application Sent!" },
+            tr: { back: "Ana Sayfaya Dön", olympiads: "Uluslararası Olimpiyatlar", olympiadsSub: "Dünya çapında en üst düzeyde rekabet edin.", learnMore: "Daha Fazla", enroll: "Kayıt Ol", applyNow: "Şimdi Başvur", selected: "Seçilen", submit: "Başvuruyu Gönder", success: "Başvuru Gönderildi!" }
+        };
 
         function showToast(msg, isError = false) {
             const alert = document.getElementById('custom-alert');
@@ -136,57 +109,73 @@
             setTimeout(() => alert.classList.remove('show'), 3000);
         }
 
-        // Fetch based on PAGE_ID
-        onSnapshot(doc(db, "content", PAGE_ID), (doc) => {
-            if (doc.exists()) {
-                programsData = doc.data().programs || [];
-                const grid = document.getElementById('programsGrid');
+        onSnapshot(doc(db, "content", PAGE_ID), (docSnap) => {
+            const lang = localStorage.getItem('preferredLang') || 'en';
+            const t = pageTranslations[lang];
+            const langIndex = lang === 'uz' ? 0 : (lang === 'en' ? 1 : 2);
+
+            document.getElementById('nav-back-text').innerText = t.back;
+            document.getElementById('pageMainTitle').innerText = t[PAGE_ID];
+            document.getElementById('pageSubTitle').innerText = t[PAGE_ID + 'Sub'];
+            document.getElementById('modal-apply-title').innerText = t.applyNow;
+            document.getElementById('txt-selected-prog').innerText = t.selected;
+            document.getElementById('btn-submit-app').innerText = t.submit;
+
+            const grid = document.getElementById('programsGrid');
+
+            if (docSnap.exists()) {
+                programsData = docSnap.data().programs || [];
                 grid.innerHTML = ""; 
 
-                const lang = localStorage.getItem('preferredLang') || 'en';
-                const langIndex = lang === 'uz' ? 0 : (lang === 'en' ? 1 : 2);
+                if (programsData.length === 0) {
+                    grid.innerHTML = "<div class='col-span-3 text-center py-20 opacity-50'>No competitions available yet.</div>";
+                    return;
+                }
 
                 programsData.forEach((prog, index) => {
-                    const titleParts = prog.t.split('|');
-                    const descParts = prog.s.split('|');
-                    const displayTitle = (titleParts[langIndex] || titleParts[0]).trim();
-                    const displayDesc = (descParts[langIndex] || descParts[0]).trim();
+                    const titleParts = (prog.t || "").split('|');
+                    const descParts = (prog.s || "").split('|');
+                    const displayTitle = (titleParts[langIndex] || titleParts[0] || "Untitled").trim();
+                    const displayDesc = (descParts[langIndex] || descParts[0] || "").trim();
 
                     grid.innerHTML += `
-                        <div class="training-card bg-slate-900/40 rounded-3xl border border-white/5 flex flex-col h-full">
-                            ${prog.img ? `<img src="${prog.img}" class="w-full h-48 object-cover rounded-t-3xl">` : ''}
+                        <div class="training-card bg-slate-900/40 rounded-3xl border border-white/5 flex flex-col h-full overflow-hidden">
+                            ${prog.img ? `<img src="${prog.img}" class="w-full h-48 object-cover">` : ''}
                             <div class="p-8 flex flex-col flex-grow">
                                 <h3 class="text-2xl font-bold mb-4 text-cyan-400">${displayTitle}</h3>
-                                <p class="text-slate-300 mb-8 flex-grow">${displayDesc}</p>
+                                <p class="text-slate-300 mb-8 flex-grow text-sm">${displayDesc}</p>
                                 <div class="flex gap-2">
-                                    <button onclick="showDetails(${index})" class="flex-1 py-3 border border-cyan-500/30 rounded-xl text-sm hover:bg-cyan-500/10 transition">Details</button>
-                                    <button onclick="openEnroll(${index})" class="flex-1 py-3 bg-cyan-500 text-slate-950 font-bold rounded-xl text-sm hover:bg-cyan-400 transition">Register</button>
+                                    <button onclick="showDetails(${index})" class="flex-1 py-3 border border-cyan-500/30 rounded-xl text-sm hover:bg-cyan-500/10 transition">${t.learnMore}</button>
+                                    <button onclick="openEnroll(${index})" class="flex-1 py-3 bg-cyan-500 text-slate-950 font-bold rounded-xl text-sm hover:bg-cyan-400 transition">${t.enroll}</button>
                                 </div>
                             </div>
                         </div>`;
                 });
             } else {
-                document.getElementById('programsGrid').innerHTML = "<div class='col-span-3 text-center py-20 text-slate-500'>No programs found for this category.</div>";
+                grid.innerHTML = `<div class='col-span-3 text-center py-20 text-red-400'>
+                    Document '<b>${PAGE_ID}</b>' not found in database.
+                </div>`;
             }
         });
 
         window.showDetails = (index) => {
             const prog = programsData[index];
+            const lang = localStorage.getItem('preferredLang') || 'en';
+            const langIndex = lang === 'uz' ? 0 : (lang === 'en' ? 1 : 2);
             const imgEl = document.getElementById('modalImg');
-            document.getElementById('modalTitle').innerText = prog.t.split('|')[1] || prog.t.split('|')[0];
+            
+            document.getElementById('modalTitle').innerText = (prog.t.split('|')[langIndex] || prog.t.split('|')[0]).trim();
             document.getElementById('modalLong').innerText = prog.l;
             
-            if (prog.img && prog.img.trim() !== "") {
-                imgEl.src = prog.img;
-                imgEl.classList.remove('hidden');
-            } else {
-                imgEl.classList.add('hidden');
-            }
+            if (prog.img) { imgEl.src = prog.img; imgEl.classList.remove('hidden'); } 
+            else { imgEl.classList.add('hidden'); }
             document.getElementById('detailsModal').classList.remove('hidden');
         };
 
         window.openEnroll = (index) => {
-            const name = programsData[index].t.split('|')[1] || programsData[index].t.split('|')[0];
+            const lang = localStorage.getItem('preferredLang') || 'en';
+            const langIndex = lang === 'uz' ? 0 : (lang === 'en' ? 1 : 2);
+            const name = (programsData[index].t.split('|')[langIndex] || programsData[index].t.split('|')[0]).trim();
             document.getElementById('displayProgName').innerText = name;
             document.getElementById('selectedProgramName').value = name;
             document.getElementById('enrollModal').classList.remove('hidden');
@@ -196,9 +185,10 @@
 
         document.getElementById('enrollForm').onsubmit = async (e) => {
             e.preventDefault();
+            const lang = localStorage.getItem('preferredLang') || 'en';
             try {
                 await addDoc(collection(db, "applications"), {
-                    category: PAGE_ID, // Automatically tracks which page they came from
+                    category: PAGE_ID,
                     program: document.getElementById('selectedProgramName').value,
                     name: document.getElementById('userName').value,
                     email: document.getElementById('userEmail').value,
@@ -206,7 +196,7 @@
                     message: document.getElementById('userMsg').value,
                     date: new Date().toISOString()
                 });
-                showToast("Application Sent Successfully!");
+                showToast(pageTranslations[lang].success);
                 closeModal('enrollModal'); 
                 e.target.reset();
             } catch (err) { showToast("Error: " + err.message, true); }

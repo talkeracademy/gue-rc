@@ -22,8 +22,8 @@
 </head>
 <body>
     <nav class="flex justify-between items-center p-10">
-        <a href="index.html" class="text-cyan-400 font-bold hover:text-cyan-500 transition flex items-center gap-2">
-            <i class="fa-solid fa-arrow-left"></i> <span id="nav-back">Back to Home</span>
+        <a href="index.html" ...>
+            <i class="fa-solid fa-arrow-left"></i> <span id="nav-back-text">Back to Home</span>
         </a>
         <div class="flex items-center space-x-8 text-2xl">
             <i id="themeToggle" class="fa-solid fa-moon cursor-pointer hover:text-cyan-400 transition"></i>
@@ -62,7 +62,7 @@
                 <input type="email" id="userEmail" placeholder="Email Address" required class="w-full bg-slate-800/50 p-3 rounded-xl border border-white/10 text-white outline-none focus:border-cyan-500">
                 <input type="tel" id="userPhone" placeholder="Phone Number" required class="w-full bg-slate-800/50 p-3 rounded-xl border border-white/10 text-white outline-none focus:border-cyan-500">
                 <textarea id="userMsg" placeholder="Additional Notes" class="w-full bg-slate-800/50 p-3 rounded-xl h-24 border border-white/10 text-white outline-none focus:border-cyan-500"></textarea>
-                <button id="btn-submit-app" type="submit" class="w-full bg-cyan-500 text-slate-950 font-bold py-4 rounded-xl hover:bg-cyan-400 transition shadow-[0_0_20px_rgba(34,211,238,0.3)]">Submit Application</button>
+                <button id="btn-submit-app" type="submit" class="w-full bg-cyan-500 text-slate-950 font-bold py-4 rounded-xl hover:bg-cyan-400 transition">Submit Application</button>
             </form>
         </div>
     </div>
@@ -78,7 +78,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const PAGE_ID = 'academy'; // Change this for other files
+        const PAGE_ID = 'academy'; 
 
         const firebaseConfig = {
             apiKey: "AIzaSyB3tnoCO0MwfSM-FH95cC52OyUHzaouC8E", 
@@ -94,9 +94,9 @@
         let programsData = [];
 
         const pageTranslations = {
-            uz: { back: "Bosh sahifaga qaytish", academy: "O'qituvchilar akademiyasi", camps: "Xalqaro lagerlar", olympics: "Xalqaro olimpiadalar", academySub: "O'qituvchilarni global metodikalar bilan qo'llab-quvvatlash", campsSub: "Dunyo bo'ylab sayohat qiling va o'rganing", olympicsSub: "Xalqaro darajadagi tanlovlar", loading: "Ulanmoqda...", learnMore: "Batafsil", enroll: "Ro'yxatdan o'tish", applyNow: "Hoziroq topshiring", selected: "Tanlangan dastur", submit: "Arizani yuborish", success: "Muvaffaqiyatli yuborildi!" },
-            en: { back: "Back to Home", academy: "Teachers Academy", camps: "International Camps", olympics: "International Olympics", academySub: "Empowering educators with global methodologies.", campsSub: "Explore the world while learning new skills.", olympicsSub: "Compete at the highest level globally.", loading: "Connecting...", learnMore: "Learn More", enroll: "Enroll Now", applyNow: "Apply Now", selected: "Selected Program", submit: "Submit Application", success: "Application Sent!" },
-            tr: { back: "Ana Sayfaya Dön", academy: "Öğretmen Akademisi", camps: "Uluslararası Kamplar", olympics: "Uluslararası Olimpiyatlar", academySub: "Eğitimcileri küresel metodolojilerle güçlendirmek.", campsSub: "Dünyayı keşfederken yeni beceriler öğrenin.", olympicsSub: "Küresel düzeyde yarışın.", loading: "Bağlanılıyor...", learnMore: "Daha Fazla", enroll: "Kayıt Ol", applyNow: "Şimdi Başvur", selected: "Seçilen Program", submit: "Başvuruyu Gönder", success: "Başvuru Gönderildi!" }
+            uz: { back: "Bosh sahifaga qaytish", academy: "O'qituvchilar akademiyasi", academySub: "O'qituvchilarni global metodikalar bilan qo'llab-quvvatlash", learnMore: "Batafsil", enroll: "Ro'yxatdan o'tish", applyNow: "Hoziroq topshiring", selected: "Tanlangan dastur", submit: "Arizani yuborish", success: "Muvaffaqiyatli yuborildi!" },
+            en: { back: "Back to Home", academy: "Teachers Academy", academySub: "Empowering educators with global methodologies.", learnMore: "Learn More", enroll: "Enroll Now", applyNow: "Apply Now", selected: "Selected Program", submit: "Submit Application", success: "Application Sent!" },
+            tr: { back: "Ana Sayfaya Dön", academy: "Öğretmen Akademisi", academySub: "Eğitimcileri küresel metodolojilerle güçlendirmek.", learnMore: "Daha Fazla", enroll: "Kayıt Ol", applyNow: "Şimdi Başvur", selected: "Seçilen Program", submit: "Başvuruyu Gönder", success: "Başvuru Gönderildi!" }
         };
 
         function showToast(msg, isError = false) {
@@ -113,65 +113,38 @@
             const t = pageTranslations[lang];
             const langIndex = lang === 'uz' ? 0 : (lang === 'en' ? 1 : 2);
 
-            // Update Header
+            // 1. UPDATE TITLES IMMEDIATELY
             document.getElementById('nav-back').innerText = t.back;
-            document.getElementById('page-title').innerText = t[PAGE_ID];
+            document.getElementById('page-title').innerText = t[PAGE_ID]; // This changes "Loading..."
             document.getElementById('page-subtitle').innerText = t[PAGE_ID + 'Sub'];
             document.getElementById('modal-apply-title').innerText = t.applyNow;
             document.getElementById('txt-selected-prog').innerText = t.selected;
             document.getElementById('btn-submit-app').innerText = t.submit;
 
+            const grid = document.getElementById('programsGrid');
+
             if (docSnap.exists()) {
                 programsData = docSnap.data().programs || [];
-                const grid = document.getElementById('programsGrid');
                 grid.innerHTML = ""; 
-<<<<<<< HEAD
-=======
-<<<<<<< Updated upstream
-                
-                const lang = localStorage.getItem('preferredLang') || 'uz';
-                const t = pageTranslations[lang];
 
-                // Get the current language memory
-                const lang = localStorage.getItem('preferredLang') || 'uz';
-                
-                // Define which "index" to use (0 = uz, 1 = en, 2 = tr)
-                const langIndex = lang === 'uz' ? 0 : (lang === 'en' ? 1 : 2);
+                if (programsData.length === 0) {
+                    grid.innerHTML = "<div class='col-span-3 text-center py-20 opacity-50'>No programs available yet.</div>";
+                    return;
+                }
 
                 programsData.forEach((prog, index) => {
-                    // Split the titles and descriptions by the "|" symbol
-                    const titleParts = prog.t.split('|');
-                    const descParts = prog.s.split('|');
-
-                    // Pick the right language, or fall back to English if the translation is missing
-                    const displayTitle = (titleParts[langIndex] || titleParts[0]).trim();
-                    const displayDesc = (descParts[langIndex] || descParts[0]).trim();
+                    // Safe split logic to prevent crashes if strings are missing
+                    const titleParts = (prog.t || "").split('|');
+                    const descParts = (prog.s || "").split('|');
+                    const displayTitle = (titleParts[langIndex] || titleParts[0] || "No Title").trim();
+                    const displayDesc = (descParts[langIndex] || descParts[0] || "").trim();
 
                     grid.innerHTML += `
-                        <div class="training-card bg-slate-900/40 p-8 rounded-3xl border border-white/5 flex flex-col h-full">
-                            <h3 class="text-2xl font-bold mb-4 text-cyan-400">${displayTitle}</h3>
-                            <p class="text-slate-300 mb-8 flex-grow">${displayDesc}</p>
-                            <div class="flex gap-2">
-                                <button onclick="showDetails(${index})" class="flex-1 py-3 border border-cyan-500/30 rounded-xl text-sm hover:bg-cyan-500/10 transition">${t.learnMore}</button>
-                                <button onclick="openEnroll(${index})" class="flex-1 py-3 bg-cyan-500 text-slate-950 font-bold rounded-xl text-sm hover:bg-cyan-400 transition">${t.enroll}</button>
-=======
-
-                const lang = localStorage.getItem('preferredLang') || 'en';
-                const langIndex = lang === 'uz' ? 0 : (lang === 'en' ? 1 : 2);
->>>>>>> main
-
-                programsData.forEach((prog, index) => {
-                    const titleParts = prog.t.split('|');
-                    const descParts = prog.s.split('|');
-                    const displayTitle = (titleParts[langIndex] || titleParts[0]).trim();
-                    const displayDesc = (descParts[langIndex] || descParts[0]).trim();
-
-                    grid.innerHTML += `
-                        <div class="training-card bg-slate-900/40 rounded-3xl border border-white/5 flex flex-col h-full">
-                            ${prog.img ? `<img src="${prog.img}" class="w-full h-48 object-cover rounded-t-3xl">` : ''}
+                        <div class="training-card bg-slate-900/40 rounded-3xl border border-white/5 flex flex-col h-full overflow-hidden">
+                            ${prog.img ? `<img src="${prog.img}" class="w-full h-48 object-cover">` : ''}
                             <div class="p-8 flex flex-col flex-grow">
                                 <h3 class="text-2xl font-bold mb-4 text-cyan-400">${displayTitle}</h3>
-                                <p class="text-slate-300 mb-8 flex-grow">${displayDesc}</p>
+                                <p class="text-slate-300 mb-8 flex-grow text-sm">${displayDesc}</p>
                                 <div class="flex gap-2">
                                     <button onclick="showDetails(${index})" class="flex-1 py-3 border border-cyan-500/30 rounded-xl text-sm hover:bg-cyan-500/10 transition">${t.learnMore}</button>
                                     <button onclick="openEnroll(${index})" class="flex-1 py-3 bg-cyan-500 text-slate-950 font-bold rounded-xl text-sm hover:bg-cyan-400 transition">${t.enroll}</button>
@@ -179,7 +152,16 @@
                             </div>
                         </div>`;
                 });
+            } else {
+                // 2. ERROR FEEDBACK
+                grid.innerHTML = `<div class='col-span-3 text-center py-20 text-red-400'>
+                    Document '<b>${PAGE_ID}</b>' not found in database. <br>
+                    Please check Firestore collection 'content'.
+                </div>`;
             }
+        }, (error) => {
+            console.error("Firebase Error:", error);
+            document.getElementById('programsGrid').innerHTML = `<div class='col-span-3 text-center py-20 text-red-500'>Permission Denied: Check Security Rules.</div>`;
         });
 
         window.showDetails = (index) => {
