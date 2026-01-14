@@ -18,6 +18,10 @@
         #custom-alert { position: fixed; bottom: 30px; right: 30px; z-index: 2000; transform: translateY(100px); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0; pointer-events: none; }
         #custom-alert.show { transform: translateY(0); opacity: 1; }
         .alert-glass { background: rgba(34, 211, 238, 0.15); backdrop-filter: blur(15px); border: 1px solid rgba(34, 211, 238, 0.3); padding: 1rem 2rem; border-radius: 20px; display: flex; align-items: center; gap: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        /* Lang Switcher Style */
+        .lang-select { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 6px 12px; border-radius: 12px; font-size: 12px; cursor: pointer; outline: none; font-weight: bold; }
+        body.light-mode .lang-select { background: white; border: 1px solid rgba(0,0,0,0.1); color: #0f172a; }
     </style>
 </head>
 <body>
@@ -25,8 +29,13 @@
         <a href="index.html" class="flex items-center space-x-2 text-cyan-400 hover:text-cyan-300 transition">
             <i class="fa-solid fa-arrow-left"></i> <span id="nav-back-text">Back to Home</span>
         </a>
-        <div class="flex items-center space-x-8 text-2xl">
-            <i id="themeToggle" class="fa-solid fa-moon cursor-pointer hover:text-cyan-400 transition"></i>
+        <div class="flex items-center space-x-6">
+            <select id="langSelect" class="lang-select">
+                <option value="en">ENG</option>
+                <option value="uz">UZB</option>
+                <option value="tr">TUR</option>
+            </select>
+            <i id="themeToggle" class="fa-solid fa-moon cursor-pointer hover:text-cyan-400 transition text-2xl"></i>
         </div>
     </nav>
 
@@ -78,7 +87,6 @@
             authDomain: "guercllc.firebaseapp.com",
             projectId: "guercllc",
             storageBucket: "guercllc.firebasestorage.app",
-            messagingSenderId: "450126717624",
             appId: "1:450126717624:web:4e152e748315b33cc68a4d"
         };
 
@@ -87,83 +95,73 @@
         let programsData = [];
 
         const pageTranslations = {
-            uz: { 
-                back: "Bosh sahifaga qaytish", 
-                scholarships: "Grantlar va Stipendiyalar", 
-                scholarshipsSub: "Mavjud stipendiya imkoniyatlari.", 
-                learnMore: "Batafsil", enroll: "Ro'yxatdan o'tish", applyNow: "Hoziroq topshiring", selected: "Tanlangan dastur", submit: "Arizani yuborish", success: "Muvaffaqiyatli yuborildi!" 
-            },
-            en: { 
-                back: "Back to Home", 
-                scholarships: "Scholarships", 
-                scholarshipsSub: "Available scholarship opportunities.", 
-                learnMore: "Learn More", enroll: "Enroll Now", applyNow: "Apply Now", selected: "Selected Program", submit: "Submit Application", success: "Application Sent!" 
-            },
-            tr: { 
-                back: "Ana Sayfaya Dön", 
-                scholarships: "Burslar", 
-                scholarshipsSub: "Mevcut burs imkanları.", 
-                learnMore: "Daha Fazla", enroll: "Kayıt Ol", applyNow: "Şimdi Başvur", selected: "Seçilen Program", submit: "Başvuruyu Gönder", success: "Başvuru Gönderildi!" 
-            }
+            uz: { back: "Bosh sahifa", scholarships: "Grantlar", scholarshipsSub: "Mavjud stipendiya imkoniyatlari.", learnMore: "Batafsil", enroll: "Ro'yxatdan o'tish", applyNow: "Hoziroq topshiring", selected: "Tanlangan dastur", submit: "Arizani yuborish", success: "Muvaffaqiyatli yuborildi!" },
+            en: { back: "Back to Home", scholarships: "Scholarships", scholarshipsSub: "Available scholarship opportunities.", learnMore: "Learn More", enroll: "Enroll Now", applyNow: "Apply Now", selected: "Selected Program", submit: "Submit Application", success: "Application Sent!" },
+            tr: { back: "Ana Sayfa", scholarships: "Burslar", scholarshipsSub: "Mevcut burs imkanları.", learnMore: "Daha Fazla", enroll: "Kayıt Ol", applyNow: "Şimdi Başvur", selected: "Seçilen Program", submit: "Başvuruyu Gönder", success: "Başvuru Gönderildi!" }
         };
 
         function showToast(msg, isError = false) {
             const alert = document.getElementById('custom-alert');
-            const icon = document.getElementById('alert-icon');
             document.getElementById('alert-message').innerText = msg;
-            icon.className = isError ? "fa-solid fa-circle-xmark text-red-400 text-xl" : "fa-solid fa-circle-check text-cyan-400 text-xl";
+            document.getElementById('alert-icon').className = isError ? "fa-solid fa-circle-xmark text-red-400 text-xl" : "fa-solid fa-circle-check text-cyan-400 text-xl";
             alert.classList.add('show');
             setTimeout(() => alert.classList.remove('show'), 3000);
         }
 
-        // Dynamic Listener - Re-renders when DB or Language changes
-        onSnapshot(doc(db, "content", PAGE_ID), (docSnap) => {
+        function renderScholarships() {
             const lang = localStorage.getItem('preferredLang') || 'en';
             const t = pageTranslations[lang];
 
-            // Update Page UI
+            // Sync Static UI
             document.getElementById('nav-back-text').innerText = t.back;
             document.getElementById('page-title').innerText = t[PAGE_ID]; 
             document.getElementById('page-subtitle').innerText = t[PAGE_ID + 'Sub'];
             document.getElementById('modal-apply-title').innerText = t.applyNow;
             document.getElementById('txt-selected-prog').innerText = t.selected;
             document.getElementById('btn-submit-app').innerText = t.submit;
+            document.getElementById('langSelect').value = lang;
 
             const grid = document.getElementById('programsGrid');
+            grid.innerHTML = ""; 
 
+            if (programsData.length === 0) {
+                grid.innerHTML = "<div class='col-span-3 text-center py-20 opacity-50'>No scholarships available yet.</div>";
+                return;
+            }
+
+            programsData.forEach((prog, index) => {
+                const displayTitle = prog[`t_${lang}`] || prog.t_en || "No Title";
+                const displayDesc = prog[`s_${lang}`] || prog.s_en || "";
+
+                grid.innerHTML += `
+                    <div class="training-card bg-slate-900/40 rounded-3xl border border-white/5 flex flex-col h-full overflow-hidden">
+                        ${prog.img ? `<img src="${prog.img}" class="w-full h-48 object-cover">` : ''}
+                        <div class="p-8 flex flex-col flex-grow">
+                            <h3 class="text-2xl font-bold mb-4 text-cyan-400">${displayTitle}</h3>
+                            <p class="text-slate-300 mb-8 flex-grow text-sm">${displayDesc}</p>
+                            <div class="flex gap-2">
+                                <button onclick="window.showDetails(${index})" class="flex-1 py-3 border border-cyan-500/30 rounded-xl text-sm hover:bg-cyan-500/10 transition">${t.learnMore}</button>
+                                <button onclick="window.openEnroll(${index})" class="flex-1 py-3 bg-cyan-500 text-slate-950 font-bold rounded-xl text-sm hover:bg-cyan-400 transition">${t.enroll}</button>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        // Live Database Listener
+        onSnapshot(doc(db, "content", PAGE_ID), (docSnap) => {
             if (docSnap.exists()) {
                 programsData = docSnap.data().programs || [];
-                grid.innerHTML = ""; 
-
-                if (programsData.length === 0) {
-                    grid.innerHTML = "<div class='col-span-3 text-center py-20 opacity-50'>No programs available yet.</div>";
-                    return;
-                }
-
-                programsData.forEach((prog, index) => {
-                    // THE GOLDEN FIX: Pick the specific language field from the DB
-                    const displayTitle = prog[`t_${lang}`] || prog.t_en || "No Title";
-                    const displayDesc = prog[`s_${lang}`] || prog.s_en || "";
-
-                    grid.innerHTML += `
-                        <div class="training-card bg-slate-900/40 rounded-3xl border border-white/5 flex flex-col h-full overflow-hidden">
-                            ${prog.img ? `<img src="${prog.img}" class="w-full h-48 object-cover">` : ''}
-                            <div class="p-8 flex flex-col flex-grow">
-                                <h3 class="text-2xl font-bold mb-4 text-cyan-400">${displayTitle}</h3>
-                                <p class="text-slate-300 mb-8 flex-grow text-sm">${displayDesc}</p>
-                                <div class="flex gap-2">
-                                    <button onclick="window.showDetails(${index})" class="flex-1 py-3 border border-cyan-500/30 rounded-xl text-sm hover:bg-cyan-500/10 transition">${t.learnMore}</button>
-                                    <button onclick="window.openEnroll(${index})" class="flex-1 py-3 bg-cyan-500 text-slate-950 font-bold rounded-xl text-sm hover:bg-cyan-400 transition">${t.enroll}</button>
-                                </div>
-                            </div>
-                        </div>`;
-                });
-            } else {
-                grid.innerHTML = `<div class='col-span-3 text-center py-20 text-red-400'>Make sure Firestore has a collection 'content' and a document '${PAGE_ID}'.</div>`;
+                renderScholarships();
             }
         });
 
-        // Handle Enrollment Name
+        // Language Selector change listener
+        document.getElementById('langSelect').onchange = (e) => {
+            localStorage.setItem('preferredLang', e.target.value);
+            renderScholarships(); // Instant refresh of page content
+        };
+
         window.openEnroll = (index) => {
             const lang = localStorage.getItem('preferredLang') || 'en';
             const prog = programsData[index];
@@ -173,22 +171,14 @@
             document.getElementById('enrollModal').classList.remove('hidden');
         };
 
-        // Show Full Details Modal (Optional logic)
         window.showDetails = (index) => {
             const lang = localStorage.getItem('preferredLang') || 'en';
             const prog = programsData[index];
-            
             document.getElementById('modalTitle').innerText = prog[`t_${lang}`] || prog.t_en;
             document.getElementById('modalLong').innerText = prog[`l_${lang}`] || prog.l_en || "No details available.";
-            
             const modalImg = document.getElementById('modalImg');
-            if (prog.img) {
-                modalImg.src = prog.img;
-                modalImg.classList.remove('hidden');
-            } else {
-                modalImg.classList.add('hidden');
-            }
-
+            if (prog.img) { modalImg.src = prog.img; modalImg.classList.remove('hidden'); }
+            else { modalImg.classList.add('hidden'); }
             document.getElementById('detailsModal').classList.remove('hidden');
         };
 
@@ -204,6 +194,7 @@
                     name: document.getElementById('userName').value,
                     email: document.getElementById('userEmail').value,
                     phone: document.getElementById('userPhone').value,
+                    notes: document.getElementById('userMsg').value,
                     date: new Date().toISOString()
                 });
                 showToast(pageTranslations[lang].success);
@@ -212,7 +203,6 @@
             } catch (err) { showToast("Error: " + err.message, true); }
         };
 
-        // Theme Toggle
         const themeToggle = document.getElementById('themeToggle');
         if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
         themeToggle.onclick = () => {
