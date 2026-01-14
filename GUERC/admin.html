@@ -10,18 +10,18 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
         body { margin: 0; background: #020617; font-family: 'Inter', sans-serif; color: white; min-height: 100vh; }
-        #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; }
         .glass-panel { background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 32px; }
         .tab-active { background: #22d3ee !important; color: #020617 !important; font-weight: bold; }
         input, textarea { outline: none; transition: all 0.3s ease; }
         input:focus, textarea:focus { border-color: #22d3ee !important; background-color: rgba(15, 23, 42, 0.8) !important; }
         .drag-handle { cursor: grab; }
         .hidden { display: none !important; }
+        #custom-alert { position: fixed; bottom: 30px; right: 30px; z-index: 2000; transform: translateY(100px); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0; pointer-events: none; }
+        #custom-alert.show { transform: translateY(0); opacity: 1; }
+        .alert-glass { background: rgba(34, 211, 238, 0.15); backdrop-filter: blur(15px); border: 1px solid rgba(34, 211, 238, 0.3); padding: 1rem 2rem; border-radius: 20px; display: flex; align-items: center; gap: 12px; }
     </style>
 </head>
 <body>
-    <canvas id="bg-canvas"></canvas>
-
     <nav class="flex justify-between items-center p-10">
         <div>
             <h1 class="text-4xl font-bold tracking-tight text-cyan-400">GUERC Master Admin</h1>
@@ -35,41 +35,30 @@
 
     <main class="max-w-7xl mx-auto px-8 pb-20">
         <div class="flex space-x-4 mb-10 overflow-x-auto pb-2">
-            <button onclick="switchCategory('academy', this)" class="category-btn tab-active bg-slate-800/50 px-8 py-3 rounded-2xl border border-white/10 transition whitespace-nowrap">Teachers Academy</button>
-            <button onclick="switchCategory('camps', this)" class="category-btn text-slate-400 hover:text-white bg-slate-800/50 px-8 py-3 rounded-2xl border border-white/10 transition whitespace-nowrap">Int. Camps</button>
-            <button onclick="switchCategory('olympics', this)" class="category-btn text-slate-400 hover:text-white bg-slate-800/50 px-8 py-3 rounded-2xl border border-white/10 transition whitespace-nowrap">Int. Olympics</button>
-            <button onclick="showApplications()" class="category-btn text-slate-400 hover:text-white bg-slate-800/50 px-8 py-3 rounded-2xl border border-white/10 transition whitespace-nowrap">View Applications</button>
+            <button onclick="switchCategory('academy', this)" class="category-btn tab-active bg-slate-800/50 px-8 py-3 rounded-2xl border border-white/10 transition">Teachers Academy</button>
+            <button onclick="switchCategory('camps', this)" class="category-btn text-slate-400 hover:text-white bg-slate-800/50 px-8 py-3 rounded-2xl border border-white/10 transition">Int. Camps</button>
+            <button onclick="switchCategory('olympics', this)" class="category-btn text-slate-400 hover:text-white bg-slate-800/50 px-8 py-3 rounded-2xl border border-white/10 transition">Int. Olympics</button>
+            <button onclick="switchCategory('scholarships', this)" class="category-btn text-slate-400 hover:text-white bg-slate-800/50 px-8 py-3 rounded-2xl border border-white/10 transition">Scholarships</button>
+            <button onclick="showApplications(this)" class="category-btn text-slate-400 hover:text-white bg-slate-800/50 px-8 py-3 rounded-2xl border border-white/10 transition">Applications</button>
         </div>
 
         <section id="editorSection" class="space-y-8">
             <div class="flex justify-between items-end">
-                <h2 class="text-2xl font-bold text-white">Manage Boxes</h2>
+                <h2 class="text-2xl font-bold text-white">Manage Content</h2>
                 <div class="flex space-x-4">
-                    <button onclick="addProgramBox()" class="bg-slate-800 text-cyan-400 border border-cyan-500/30 px-6 py-2 rounded-xl font-bold hover:bg-cyan-500/10 transition">
-                        <i class="fa-solid fa-plus mr-2"></i> Add Box
-                    </button>
-                    <button id="saveBtn" class="bg-cyan-500 text-slate-950 px-8 py-2 rounded-xl font-bold hover:bg-cyan-400 transition shadow-[0_0_20px_rgba(34,211,238,0.3)]">
-                        Sync Changes
-                    </button>
+                    <button onclick="addProgramBox()" class="bg-slate-800 text-cyan-400 border border-cyan-500/30 px-6 py-2 rounded-xl font-bold hover:bg-cyan-500/10 transition">Add New Box</button>
+                    <button id="saveBtn" class="bg-cyan-500 text-slate-950 px-8 py-2 rounded-xl font-bold hover:bg-cyan-400 transition shadow-[0_0_20px_rgba(34,211,238,0.3)]">Sync All Changes</button>
                 </div>
             </div>
             <div id="adminProgramsContainer" class="grid grid-cols-1 lg:grid-cols-3 gap-6"></div>
         </section>
 
         <section id="appsSection" class="hidden glass-panel p-8">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                <h2 class="text-2xl font-bold text-cyan-400">Student Applications</h2>
-                <div class="flex w-full md:w-auto gap-4">
-                    <input type="text" id="appSearch" placeholder="Search name, email, or program..." 
-                           class="bg-slate-800/50 border border-white/10 px-4 py-2 rounded-lg text-sm outline-none focus:border-cyan-400 w-full md:w-64">
-                    <button onclick="exportToCSV()" class="text-sm bg-green-600/20 text-green-400 border border-green-500/30 px-4 py-2 rounded-lg whitespace-nowrap">Export CSV</button>
-                </div>
-            </div>
+            <h2 class="text-2xl font-bold text-cyan-400 mb-6">Student Applications</h2>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
                         <tr class="text-cyan-500 border-b border-white/10 text-sm">
-                            <th class="p-4">Category</th>
                             <th class="p-4">Student</th>
                             <th class="p-4">Program</th>
                             <th class="p-4">Date</th>
@@ -80,6 +69,8 @@
             </div>
         </section>
     </main>
+
+    <div id="custom-alert"><div class="alert-glass"><i id="alert-icon"></i><p id="alert-message" class="text-white font-bold text-sm"></p></div></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -110,20 +101,29 @@
 
         document.getElementById('logoutBtn').onclick = () => signOut(auth);
 
+        function showToast(msg, isError = false) {
+            const alert = document.getElementById('custom-alert');
+            document.getElementById('alert-message').innerText = msg;
+            document.getElementById('alert-icon').className = isError ? "fa-solid fa-circle-xmark text-red-400 text-xl" : "fa-solid fa-circle-check text-cyan-400 text-xl";
+            alert.classList.add('show');
+            setTimeout(() => alert.classList.remove('show'), 3000);
+        }
+
         window.switchCategory = (cat, btn) => {
             currentCategory = cat;
             document.getElementById('editorSection').classList.remove('hidden');
             document.getElementById('appsSection').classList.add('hidden');
-            document.getElementById('currentViewLabel').innerText = cat.charAt(0).toUpperCase() + cat.slice(1);
-            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('tab-active', 'text-slate-950'));
+            document.getElementById('currentViewLabel').innerText = cat;
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('tab-active'));
             btn.classList.add('tab-active');
             loadData(cat);
         };
 
-        window.showApplications = () => {
+        window.showApplications = (btn) => {
             document.getElementById('editorSection').classList.add('hidden');
             document.getElementById('appsSection').classList.remove('hidden');
             document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('tab-active'));
+            btn.classList.add('tab-active');
             loadApplications();
         };
 
@@ -141,39 +141,14 @@
             const box = document.createElement('div');
             box.className = "program-admin-card glass-panel p-6 space-y-4 relative border border-white/5";
             box.innerHTML = `
-                <div class="drag-handle text-slate-600 hover:text-cyan-400 mb-2 transition-colors">
-                    <i class="fa-solid fa-grip-lines"></i>
-                </div>
-                <button onclick="this.parentElement.remove()" class="absolute top-6 right-6 text-red-400 hover:text-red-500 transition-colors">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
+                <div class="drag-handle text-slate-600 hover:text-cyan-400 transition-colors"><i class="fa-solid fa-grip-lines"></i></div>
+                <button onclick="this.parentElement.remove()" class="absolute top-6 right-6 text-red-400"><i class="fa-solid fa-trash"></i></button>
                 <input type="text" value="${data.t}" placeholder="Title (UZ | EN | TR)" class="prog-t w-full bg-slate-800/50 p-3 rounded-xl border border-white/10 text-white">
-                <div class="image-drop-zone w-full bg-slate-800/30 border-2 border-dashed border-white/10 rounded-xl p-4 text-center hover:border-cyan-400 transition" 
-                     ondragover="event.preventDefault();" ondrop="handleDrop(event, this)">
-                    <input type="text" value="${data.img || ''}" placeholder="Image URL" class="prog-img w-full bg-transparent text-xs text-slate-400 text-center mb-1 pointer-events-none">
-                    <p class="text-[10px] uppercase tracking-widest text-slate-500">Drag Image Here</p>
-                </div>
+                <input type="text" value="${data.img || ''}" placeholder="Image URL" class="prog-img w-full bg-slate-800/50 p-3 rounded-xl border border-white/10 text-white">
                 <textarea placeholder="Short Summary" class="prog-s w-full bg-slate-800/50 p-3 rounded-xl h-20 border border-white/10 text-white">${data.s}</textarea>
                 <textarea placeholder="Full Details" class="prog-l w-full bg-slate-800/50 p-3 rounded-xl h-32 border border-white/10 text-white">${data.l}</textarea>
             `;
             container.appendChild(box);
-        };
-
-        window.handleDrop = async (e, zone) => {
-            e.preventDefault();
-            const file = e.dataTransfer.files[0];
-            if(!file) return;
-            const input = zone.querySelector('.prog-img');
-            input.value = "Uploading...";
-            try {
-                const sRef = ref(storage, `uploads/${Date.now()}_${file.name}`);
-                await uploadBytes(sRef, file);
-                const url = await getDownloadURL(sRef);
-                input.value = url;
-            } catch (err) {
-                input.value = "";
-                alert("Upload failed: " + err.message);
-            }
         };
 
         document.getElementById('saveBtn').onclick = async () => {
@@ -186,38 +161,22 @@
             }));
             try {
                 await setDoc(doc(db, "content", currentCategory), { programs: progs });
-                alert("Changes Synced to " + currentCategory.toUpperCase());
-            } catch (err) {
-                alert("Error saving: " + err.message);
-            }
+                showToast("Data Synced Successfully!");
+            } catch (err) { showToast("Error: " + err.message, true); }
         };
 
         function loadApplications() {
             const list = document.getElementById('applicationList');
-            const searchInput = document.getElementById('appSearch');
             onSnapshot(query(collection(db, "applications"), orderBy("date", "desc")), (snap) => {
-                let allApps = [];
-                snap.forEach(d => allApps.push(d.data()));
-                const render = (data) => {
-                    list.innerHTML = "";
-                    data.forEach(a => {
-                        list.innerHTML += `<tr class="border-b border-white/5 hover:bg-white/5 transition">
-                            <td class="p-4 text-xs font-bold text-cyan-500 uppercase">${a.category || 'N/A'}</td>
-                            <td class="p-4"><b>${a.name}</b><br><span class="text-[10px] opacity-50">${a.email}</span></td>
-                            <td class="p-4 text-sm">${a.program}</td>
-                            <td class="p-4 text-[10px]">${new Date(a.date).toLocaleDateString()}</td>
-                        </tr>`;
-                    });
-                };
-                render(allApps);
-                searchInput.oninput = (e) => {
-                    const term = e.target.value.toLowerCase();
-                    render(allApps.filter(a => 
-                        a.name.toLowerCase().includes(term) || 
-                        a.email.toLowerCase().includes(term) ||
-                        (a.program && a.program.toLowerCase().includes(term))
-                    ));
-                };
+                list.innerHTML = "";
+                snap.forEach(d => {
+                    const a = d.data();
+                    list.innerHTML += `<tr class="border-b border-white/5 hover:bg-white/5 transition">
+                        <td class="p-4"><b>${a.name}</b><br><span class="text-[10px] opacity-50">${a.email}</span></td>
+                        <td class="p-4 text-sm">${a.program}</td>
+                        <td class="p-4 text-[10px]">${new Date(a.date).toLocaleDateString()}</td>
+                    </tr>`;
+                });
             });
         }
         Sortable.create(document.getElementById('adminProgramsContainer'), { animation: 150, handle: '.drag-handle' });
