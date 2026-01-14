@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery | GUERC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
+        body { margin: 0; background: #020617; font-family: 'Inter', sans-serif; color: white; transition: all 0.5s ease; }
+        body.light-mode { background: #f8fafc; color: #0f172a; }
+        .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 32px; }
+        body.light-mode .glass-panel { background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(0, 0, 0, 0.05); }
+        
+        /* Gallery Specific */
+        .gallery-item { break-inside: avoid; margin-bottom: 1.5rem; transition: all 0.3s ease; cursor: pointer; border-radius: 20px; overflow: hidden; }
+        .gallery-item:hover { transform: scale(1.02); }
+        .masonry { column-count: 1; column-gap: 1.5rem; }
+        @media (min-width: 768px) { .masonry { column-count: 2; } }
+        @media (min-width: 1024px) { .masonry { column-count: 3; } }
+    </style>
+</head>
+<body>
+    <nav class="flex justify-between items-center p-10">
+        <a href="index.html" class="text-cyan-400 hover:text-cyan-300 transition flex items-center gap-2">
+            <i class="fa-solid fa-arrow-left"></i> <span>Back to Home</span>
+        </a>
+        <i id="themeToggle" class="fa-solid fa-moon text-2xl cursor-pointer hover:text-cyan-400 transition"></i>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-8 py-12">
+        <div class="glass-panel p-8 md:p-12">
+            <h1 class="text-5xl font-bold mb-4 text-cyan-400">Gallery</h1>
+            <p class="text-slate-400 mb-12 text-lg">Capturing moments from our global educational journey.</p>
+            
+            <div id="galleryGrid" class="masonry">
+                <div class="col-span-full text-center py-20 opacity-40">Loading gallery...</div>
+            </div>
+        </div>
+    </main>
+
+    <div id="lightbox" class="hidden fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4" onclick="this.classList.add('hidden')">
+        <img id="lightboxImg" src="" class="max-w-full max-h-[90vh] rounded-xl shadow-2xl">
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB3tnoCO0MwfSM-FH95cC52OyUHzaouC8E",
+            authDomain: "guercllc.firebaseapp.com",
+            projectId: "guercllc",
+            storageBucket: "guercllc.firebasestorage.app",
+            appId: "1:450126717624:web:4e152e748315b33cc68a4d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Fetch Gallery Data from Firebase
+        onSnapshot(doc(db, "content", "gallery"), (docSnap) => {
+            const grid = document.getElementById('galleryGrid');
+            if (docSnap.exists() && docSnap.data().images) {
+                grid.innerHTML = "";
+                docSnap.data().images.forEach(imgUrl => {
+                    const div = document.createElement('div');
+                    div.className = "gallery-item";
+                    div.innerHTML = `<img src="${imgUrl}" class="w-full h-auto block" loading="lazy">`;
+                    div.onclick = () => {
+                        document.getElementById('lightboxImg').src = imgUrl;
+                        document.getElementById('lightbox').classList.remove('hidden');
+                    };
+                    grid.appendChild(div);
+                });
+            } else {
+                grid.innerHTML = "<p class='col-span-full text-center opacity-50'>No photos found.</p>";
+            }
+        });
+
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
+        themeToggle.onclick = () => {
+            document.body.classList.toggle('light-mode');
+            localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+        };
+    </script>
+</body>
+</html>
