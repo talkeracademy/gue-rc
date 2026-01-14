@@ -19,6 +19,12 @@
         #custom-alert { position: fixed; bottom: 30px; right: 30px; z-index: 2000; transform: translateY(100px); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0; pointer-events: none; }
         #custom-alert.show { transform: translateY(0); opacity: 1; }
         .alert-glass { background: rgba(34, 211, 238, 0.15); backdrop-filter: blur(15px); border: 1px solid rgba(34, 211, 238, 0.3); padding: 1rem 2rem; border-radius: 20px; display: flex; align-items: center; gap: 12px; }
+        
+        /* Mini-Tab Styles for Cards */
+        .lang-tab { padding: 4px 12px; border-radius: 8px; font-size: 11px; cursor: pointer; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; font-weight: bold; }
+        .lang-tab.active { background: #22d3ee; color: #020617; border-color: #22d3ee; }
+        .lang-content { display: none; }
+        .lang-content.active { display: block; }
     </style>
 </head>
 <body>
@@ -55,7 +61,7 @@
             <div class="flex justify-end">
                 <button onclick="addProgramBox()" class="bg-slate-800 text-cyan-400 border border-cyan-500/30 px-6 py-2 rounded-xl font-bold hover:bg-cyan-500/10 transition">Add New Box</button>
             </div>
-            <div id="adminProgramsContainer" class="grid grid-cols-1 lg:grid-cols-3 gap-6"></div>
+            <div id="adminProgramsContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
         </section>
 
         <section id="articlesSection" class="hidden space-y-8">
@@ -125,9 +131,17 @@
             setTimeout(() => alert.classList.remove('show'), 3000);
         }
 
+        // Global Mini-Tab Switcher
+        window.switchCardLang = (btn, lang) => {
+            const card = btn.closest('.program-admin-card');
+            card.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            card.querySelectorAll('.lang-content').forEach(c => c.classList.remove('active'));
+            card.querySelector(`.lang-content.${lang}`).classList.add('active');
+        };
+
         window.switchCategory = (cat, btn) => {
             currentCategory = cat;
-            // Reset Views
             document.getElementById('editorSection').classList.add('hidden');
             document.getElementById('appsSection').classList.add('hidden');
             document.getElementById('articlesSection').classList.add('hidden');
@@ -155,7 +169,6 @@
 
         async function loadData(cat) {
             const snap = await getDoc(doc(db, "content", cat));
-            
             if (cat === 'articles') {
                 const container = document.getElementById('articlesContainer');
                 container.innerHTML = "";
@@ -171,36 +184,39 @@
             }
         }
 
-        // Row Generators
         window.addProgramBox = (data = {t_uz:'', t_en:'', t_tr:'', s_uz:'', s_en:'', s_tr:'', l_uz:'', l_en:'', l_tr:'', img:''}) => {
             const container = document.getElementById('adminProgramsContainer');
             const box = document.createElement('div');
             box.className = "program-admin-card glass-panel p-6 space-y-4 relative border border-white/5";
             box.innerHTML = `
-                <div class="drag-handle text-slate-600 hover:text-cyan-400 transition-colors"><i class="fa-solid fa-grip-lines"></i></div>
-                <button onclick="this.parentElement.remove()" class="absolute top-6 right-6 text-red-400"><i class="fa-solid fa-trash"></i></button>
+                <div class="flex justify-between items-center mb-2">
+                    <div class="drag-handle text-slate-600 hover:text-cyan-400 transition-colors"><i class="fa-solid fa-grip-lines"></i></div>
+                    <div class="flex gap-2">
+                        <button onclick="switchCardLang(this, 'uz')" class="lang-tab active">UZ</button>
+                        <button onclick="switchCardLang(this, 'en')" class="lang-tab">EN</button>
+                        <button onclick="switchCardLang(this, 'tr')" class="lang-tab">TR</button>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash text-sm"></i></button>
+                </div>
                 
-                <input type="text" value="${data.img || ''}" placeholder="Image URL" class="prog-img w-full bg-slate-800/50 p-3 rounded-xl border border-white/10 text-white">
+                <input type="text" value="${data.img || ''}" placeholder="Image URL" class="prog-img w-full bg-slate-800/50 p-3 rounded-xl border border-white/10 text-white text-xs">
                 
-                <p class="text-[10px] uppercase tracking-widest opacity-40">Titles</p>
-                <div class="grid grid-cols-3 gap-2">
-                    <input type="text" value="${data.t_uz || ''}" placeholder="UZ" class="prog-t-uz bg-slate-900 p-2 rounded-lg border border-white/10 text-xs text-white">
-                    <input type="text" value="${data.t_en || ''}" placeholder="EN" class="prog-t-en bg-slate-900 p-2 rounded-lg border border-white/10 text-xs text-white">
-                    <input type="text" value="${data.t_tr || ''}" placeholder="TR" class="prog-t-tr bg-slate-900 p-2 rounded-lg border border-white/10 text-xs text-white">
+                <div class="lang-content uz active space-y-3">
+                    <input type="text" value="${data.t_uz || ''}" placeholder="Title (UZ)" class="prog-t-uz w-full bg-slate-900 p-3 rounded-xl border border-cyan-500/20 text-white font-bold">
+                    <textarea placeholder="Short Summary (UZ)" class="prog-s-uz w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-20">${data.s_uz || ''}</textarea>
+                    <textarea placeholder="Long Details (UZ)" class="prog-l-uz w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-48">${data.l_uz || ''}</textarea>
                 </div>
 
-                <p class="text-[10px] uppercase tracking-widest opacity-40">Short Summaries</p>
-                <div class="grid grid-cols-3 gap-2">
-                    <textarea placeholder="UZ" class="prog-s-uz bg-slate-900 p-2 rounded-lg border border-white/10 text-xs text-white h-20">${data.s_uz || ''}</textarea>
-                    <textarea placeholder="EN" class="prog-s-en bg-slate-900 p-2 rounded-lg border border-white/10 text-xs text-white h-20">${data.s_en || ''}</textarea>
-                    <textarea placeholder="TR" class="prog-s-tr bg-slate-900 p-2 rounded-lg border border-white/10 text-xs text-white h-20">${data.s_tr || ''}</textarea>
+                <div class="lang-content en space-y-3">
+                    <input type="text" value="${data.t_en || ''}" placeholder="Title (EN)" class="prog-t-en w-full bg-slate-900 p-3 rounded-xl border border-cyan-500/20 text-white font-bold">
+                    <textarea placeholder="Short Summary (EN)" class="prog-s-en w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-20">${data.s_en || ''}</textarea>
+                    <textarea placeholder="Long Details (EN)" class="prog-l-en w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-48">${data.l_en || ''}</textarea>
                 </div>
 
-                <p class="text-[10px] uppercase tracking-widest opacity-40">Full Details (Modal)</p>
-                <div class="grid grid-cols-3 gap-2">
-                    <textarea placeholder="UZ" class="prog-l-uz bg-slate-900 p-2 rounded-lg border border-white/10 text-xs text-white h-32">${data.l_uz || ''}</textarea>
-                    <textarea placeholder="EN" class="prog-l-en bg-slate-900 p-2 rounded-lg border border-white/10 text-xs text-white h-32">${data.l_en || ''}</textarea>
-                    <textarea placeholder="TR" class="prog-l-tr bg-slate-900 p-2 rounded-lg border border-white/10 text-xs text-white h-32">${data.l_tr || ''}</textarea>
+                <div class="lang-content tr space-y-3">
+                    <input type="text" value="${data.t_tr || ''}" placeholder="Title (TR)" class="prog-t-tr w-full bg-slate-900 p-3 rounded-xl border border-cyan-500/20 text-white font-bold">
+                    <textarea placeholder="Short Summary (TR)" class="prog-s-tr w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-20">${data.s_tr || ''}</textarea>
+                    <textarea placeholder="Long Details (TR)" class="prog-l-tr w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-48">${data.l_tr || ''}</textarea>
                 </div>
             `;
             container.appendChild(box);
@@ -236,12 +252,10 @@
             container.appendChild(row);
         };
 
-        // Unified Save Logic
         document.getElementById('saveBtn').onclick = async () => {
             try {
                 if (currentCategory === 'articles') {
                     const items = Array.from(document.querySelectorAll('#articlesContainer > div')).map(row => ({
-                        // We add UZ, EN, TR for Article titles too
                         t_uz: row.querySelector('.art-t-uz').value,
                         t_en: row.querySelector('.art-t-en').value,
                         t_tr: row.querySelector('.art-t-tr').value,
@@ -253,10 +267,8 @@
                     const images = Array.from(document.querySelectorAll('#galleryContainer input')).map(input => input.value).filter(v => v !== "");
                     await setDoc(doc(db, "content", "gallery"), { images });
                 } else {
-                    const cards = document.querySelectorAll('.program-admin-card');
-                    const progs = Array.from(cards).map(c => ({
+                    const progs = Array.from(document.querySelectorAll('.program-admin-card')).map(c => ({
                         img: c.querySelector('.prog-img').value,
-                        // The "Golden" triple-language save for Programs
                         t_uz: c.querySelector('.prog-t-uz').value,
                         t_en: c.querySelector('.prog-t-en').value,
                         t_tr: c.querySelector('.prog-t-tr').value,
@@ -270,9 +282,7 @@
                     await setDoc(doc(db, "content", currentCategory), { programs: progs });
                 }
                 showToast("System Synced Successfully!");
-            } catch (err) { 
-                showToast("Sync Error: " + err.message, true); 
-            }
+            } catch (err) { showToast("Sync Error: " + err.message, true); }
         };
 
         function loadApplications() {
