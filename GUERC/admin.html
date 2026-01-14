@@ -21,10 +21,8 @@
         .alert-glass { background: rgba(34, 211, 238, 0.15); backdrop-filter: blur(15px); border: 1px solid rgba(34, 211, 238, 0.3); padding: 1rem 2rem; border-radius: 20px; display: flex; align-items: center; gap: 12px; }
         
         /* Language Tab Styles */
-        .lang-tab { padding: 6px 14px; border-radius: 10px; font-size: 11px; cursor: pointer; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #94a3b8; }
-        .lang-tab.active { background: #22d3ee; color: #020617; border-color: #22d3ee; font-weight: bold; }
-        .lang-content { display: none; }
-        .lang-content.active { display: block; }
+        .lang-tab { padding: 8px 16px; border-radius: 12px; font-size: 12px; cursor: pointer; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #94a3b8; font-weight: bold; }
+        .lang-tab.active { background: #22d3ee !important; color: #020617 !important; border-color: #22d3ee !important; }
     </style>
 </head>
 <body>
@@ -125,17 +123,21 @@
             setTimeout(() => alert.classList.remove('show'), 3000);
         }
 
-        // Logic Fix: Explicitly toggle visibility without touching the value of the inputs
+        // IMPROVED TOGGLE LOGIC: No class manipulation on containers, just simple display control
         window.switchCardLang = (btn, lang) => {
             const card = btn.closest('.program-admin-card');
             
-            // Tab button UI
+            // UI Button styling
             card.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
             btn.classList.add('active');
             
-            // Content visibility
-            card.querySelectorAll('.lang-content').forEach(c => c.classList.remove('active'));
-            card.querySelector(`.lang-content.${lang}`).classList.add('active');
+            // Visibility logic
+            const sections = ['uz', 'en', 'tr'];
+            sections.forEach(s => {
+                const el = card.querySelector(`.section-${s}`);
+                if(s === lang) el.style.display = 'block';
+                else el.style.display = 'none';
+            });
         };
 
         window.switchCategory = (cat, btn) => {
@@ -153,16 +155,6 @@
             document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('tab-active'));
             btn.classList.add('tab-active');
             loadData(cat);
-        };
-
-        window.showApplications = (btn) => {
-            document.getElementById('editorSection').classList.add('hidden');
-            document.getElementById('articlesSection').classList.add('hidden');
-            document.getElementById('gallerySection').classList.add('hidden');
-            document.getElementById('appsSection').classList.remove('hidden');
-            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('tab-active'));
-            btn.classList.add('tab-active');
-            loadApplications();
         };
 
         async function loadData(cat) {
@@ -186,64 +178,66 @@
             const container = document.getElementById('adminProgramsContainer');
             const box = document.createElement('div');
             box.className = "program-admin-card glass-panel p-8 space-y-4 relative border border-white/5";
+            
+            // Using inline styles for initial state to prevent any CSS race conditions
             box.innerHTML = `
                 <div class="flex justify-between items-center mb-4">
                     <div class="drag-handle text-slate-600 hover:text-cyan-400 cursor-grab px-2"><i class="fa-solid fa-grip-lines"></i></div>
-                    <div class="flex gap-2 bg-slate-900/50 p-1 rounded-xl">
-                        <button type="button" onclick="switchCardLang(this, 'uz')" class="lang-tab active">UZ</button>
-                        <button type="button" onclick="switchCardLang(this, 'en')" class="lang-tab">EN</button>
-                        <button type="button" onclick="switchCardLang(this, 'tr')" class="lang-tab">TR</button>
+                    <div class="flex gap-2 bg-slate-900/80 p-1.5 rounded-2xl border border-white/5">
+                        <button type="button" onclick="switchCardLang(this, 'uz')" class="lang-tab active">UZB</button>
+                        <button type="button" onclick="switchCardLang(this, 'en')" class="lang-tab">ENG</button>
+                        <button type="button" onclick="switchCardLang(this, 'tr')" class="lang-tab">TUR</button>
                     </div>
-                    <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-400 hover:text-red-300 transition-colors"><i class="fa-solid fa-trash text-sm"></i></button>
+                    <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-500/50 hover:text-red-400 transition-colors"><i class="fa-solid fa-circle-xmark text-xl"></i></button>
                 </div>
                 
-                <div class="mb-4">
-                    <p class="text-[10px] uppercase tracking-widest opacity-40 mb-2">General Info</p>
-                    <input type="text" value="${data.img || ''}" placeholder="Image URL (e.g., https://site.com/photo.jpg)" class="prog-img w-full bg-slate-800/80 p-3 rounded-xl border border-white/10 text-white text-xs">
+                <div class="mb-6">
+                    <p class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">Banner Image URL</p>
+                    <input type="text" value="${data.img || ''}" class="prog-img w-full bg-slate-800/50 p-3 rounded-xl border border-white/10 text-white text-xs">
                 </div>
                 
-                <div class="lang-content uz active space-y-4">
+                <div class="section-uz space-y-4" style="display: block;">
                     <div>
                         <p class="text-[10px] uppercase text-cyan-400 font-bold mb-1">Title (UZ)</p>
-                        <input type="text" value="${data.t_uz || ''}" class="prog-t-uz w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-white">
+                        <input type="text" value="${data.t_uz || ''}" class="prog-t-uz w-full bg-slate-900/80 p-3 rounded-xl border border-white/10 text-white">
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase text-cyan-400 font-bold mb-1">Short Description (UZ)</p>
-                        <textarea class="prog-s-uz w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-20">${data.s_uz || ''}</textarea>
+                        <p class="text-[10px] uppercase text-cyan-400 font-bold mb-1">Summary (UZ)</p>
+                        <textarea class="prog-s-uz w-full bg-slate-900/80 p-3 rounded-xl border border-white/10 text-xs text-white h-20">${data.s_uz || ''}</textarea>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase text-cyan-400 font-bold mb-1">Full Content (UZ)</p>
-                        <textarea class="prog-l-uz w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-48">${data.l_uz || ''}</textarea>
-                    </div>
-                </div>
-
-                <div class="lang-content en space-y-4">
-                    <div>
-                        <p class="text-[10px] uppercase text-cyan-400 font-bold mb-1">Title (EN)</p>
-                        <input type="text" value="${data.t_en || ''}" class="prog-t-en w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-white">
-                    </div>
-                    <div>
-                        <p class="text-[10px] uppercase text-cyan-400 font-bold mb-1">Short Description (EN)</p>
-                        <textarea class="prog-s-en w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-20">${data.s_en || ''}</textarea>
-                    </div>
-                    <div>
-                        <p class="text-[10px] uppercase text-cyan-400 font-bold mb-1">Full Content (EN)</p>
-                        <textarea class="prog-l-en w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-48">${data.l_en || ''}</textarea>
+                        <p class="text-[10px] uppercase text-cyan-400 font-bold mb-1">Details (UZ)</p>
+                        <textarea class="prog-l-uz w-full bg-slate-900/80 p-3 rounded-xl border border-white/10 text-xs text-white h-40">${data.l_uz || ''}</textarea>
                     </div>
                 </div>
 
-                <div class="lang-content tr space-y-4">
+                <div class="section-en space-y-4" style="display: none;">
                     <div>
-                        <p class="text-[10px] uppercase text-cyan-400 font-bold mb-1">Title (TR)</p>
-                        <input type="text" value="${data.t_tr || ''}" class="prog-t-tr w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-white">
+                        <p class="text-[10px] uppercase text-amber-400 font-bold mb-1">Title (EN)</p>
+                        <input type="text" value="${data.t_en || ''}" class="prog-t-en w-full bg-slate-900/80 p-3 rounded-xl border border-white/10 text-white">
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase text-cyan-400 font-bold mb-1">Short Description (TR)</p>
-                        <textarea class="prog-s-tr w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-20">${data.s_tr || ''}</textarea>
+                        <p class="text-[10px] uppercase text-amber-400 font-bold mb-1">Summary (EN)</p>
+                        <textarea class="prog-s-en w-full bg-slate-900/80 p-3 rounded-xl border border-white/10 text-xs text-white h-20">${data.s_en || ''}</textarea>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase text-cyan-400 font-bold mb-1">Full Content (TR)</p>
-                        <textarea class="prog-l-tr w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-48">${data.l_tr || ''}</textarea>
+                        <p class="text-[10px] uppercase text-amber-400 font-bold mb-1">Details (EN)</p>
+                        <textarea class="prog-l-en w-full bg-slate-900/80 p-3 rounded-xl border border-white/10 text-xs text-white h-40">${data.l_en || ''}</textarea>
+                    </div>
+                </div>
+
+                <div class="section-tr space-y-4" style="display: none;">
+                    <div>
+                        <p class="text-[10px] uppercase text-emerald-400 font-bold mb-1">Title (TR)</p>
+                        <input type="text" value="${data.t_tr || ''}" class="prog-t-tr w-full bg-slate-900/80 p-3 rounded-xl border border-white/10 text-white">
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase text-emerald-400 font-bold mb-1">Summary (TR)</p>
+                        <textarea class="prog-s-tr w-full bg-slate-900/80 p-3 rounded-xl border border-white/10 text-xs text-white h-20">${data.s_tr || ''}</textarea>
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase text-emerald-400 font-bold mb-1">Details (TR)</p>
+                        <textarea class="prog-l-tr w-full bg-slate-900/80 p-3 rounded-xl border border-white/10 text-xs text-white h-40">${data.l_tr || ''}</textarea>
                     </div>
                 </div>
             `;
@@ -295,7 +289,8 @@
                     const images = Array.from(document.querySelectorAll('#galleryContainer input')).map(input => input.value).filter(v => v !== "");
                     await setDoc(doc(db, "content", "gallery"), { images });
                 } else {
-                    const progs = Array.from(document.querySelectorAll('.program-admin-card')).map(c => ({
+                    const cards = document.querySelectorAll('.program-admin-card');
+                    const progs = Array.from(cards).map(c => ({
                         img: c.querySelector('.prog-img').value,
                         t_uz: c.querySelector('.prog-t-uz').value,
                         t_en: c.querySelector('.prog-t-en').value,
@@ -307,7 +302,7 @@
                         l_en: c.querySelector('.prog-l-en').value,
                         l_tr: c.querySelector('.prog-l-tr').value
                     }));
-                    await setDoc(doc(db, "content", currentCategory), { programs: progs });
+                    await setDoc(doc(db, \"content\", currentCategory), { programs: progs });
                 }
                 showToast("System Synced Successfully!");
             } catch (err) { showToast("Sync Error: " + err.message, true); }
