@@ -312,11 +312,20 @@
     </div>
 
     <script type="module">
+        // 1. ADDED Auth imports here
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged, 
+            signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword, 
+            signOut 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+        // 2. Your Config
         const firebaseConfig = {
-            apiKey: "AIzaSyB3tnoCO0MwfSM-FH95cC52OyUHzaouC8E", 
+            apiKey: "AIzaSyB3tnoCO0MwfSM-FH95cC52OyUHzaouC8E",
             authDomain: "guercllc.firebaseapp.com",
             projectId: "guercllc",
             storageBucket: "guercllc.firebasestorage.app",
@@ -325,8 +334,11 @@
             measurementId: "G-9XT67W4NM8"
         };
 
+        // 3. Initialize BOTH DB and Auth
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const auth = getAuth(app); // Initialize Auth!
+
         let isLoggingIn = true;
 
         const authModal = document.getElementById('authModal');
@@ -345,6 +357,7 @@
         userBtn.onclick = () => authModal.classList.remove('hidden');
         memberLogoutBtn.onclick = () => signOut(auth);
 
+        // This listener watches if a user is logged in
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 userBtn.classList.add('hidden');
