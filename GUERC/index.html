@@ -11,12 +11,12 @@
         
         body { 
             margin: 0; 
-            background: #020617; /* Default dark */
+            background: #020617; 
             font-family: 'Inter', sans-serif; 
             color: white;
-            overflow: hidden;
-            height: 100vh;
-            transition: background-color 0.5s ease, color 0.5s ease;
+            overflow-x: hidden;
+            overflow-y: auto; 
+            min-height: 100vh;
         }
 
         body.light-mode {
@@ -80,6 +80,10 @@
         section { 
             position: relative; 
             z-index: 10; 
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
     </style>
 </head>
@@ -188,11 +192,11 @@
     </div>
 </section>
 
-    <footer class="fixed bottom-12 w-full flex justify-center space-x-12 text-2xl opacity-40">
-        <i class="fa-brands fa-instagram cursor-pointer hover:opacity-100 hover:text-cyan-400 transition"></i>
-        <i class="fa-brands fa-facebook cursor-pointer hover:opacity-100 hover:text-cyan-400 transition"></i>
-        <i class="fa-brands fa-telegram cursor-pointer hover:opacity-100 hover:text-cyan-400 transition"></i>
-    </footer>
+        <footer class="w-full flex justify-center space-x-12 text-2xl opacity-40 py-12">
+            <i class="fa-brands fa-instagram cursor-pointer hover:opacity-100 hover:text-cyan-400 transition"></i>
+            <i class="fa-brands fa-facebook cursor-pointer hover:opacity-100 hover:text-cyan-400 transition"></i>
+            <i class="fa-brands fa-telegram cursor-pointer hover:opacity-100 hover:text-cyan-400 transition"></i>
+        </footer>
 
     <script>
         const canvas = document.getElementById('bg-canvas');
