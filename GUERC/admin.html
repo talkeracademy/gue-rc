@@ -39,18 +39,37 @@
             <button onclick="switchCategory('camps', this)" class="category-btn text-slate-400 hover:text-white bg-slate-800/50 px-8 py-3 rounded-2xl border border-white/10 transition">Int. Camps</button>
             <button onclick="switchCategory('olympics', this)" class="category-btn text-slate-400 hover:text-white bg-slate-800/50 px-8 py-3 rounded-2xl border border-white/10 transition">Int. Olympics</button>
             <button onclick="switchCategory('scholarships', this)" class="category-btn text-slate-400 hover:text-white bg-slate-800/50 px-8 py-3 rounded-2xl border border-white/10 transition">Scholarships</button>
+            <button onclick="switchCategory('articles', this)" class="category-btn text-slate-400 hover:text-white bg-slate-800/50 px-8 py-3 rounded-2xl border border-white/10 transition">Articles</button>
+            <button onclick="switchCategory('gallery', this)" class="category-btn text-slate-400 hover:text-white bg-slate-800/50 px-8 py-3 rounded-2xl border border-white/10 transition">Gallery</button>
             <button onclick="showApplications(this)" class="category-btn text-slate-400 hover:text-white bg-slate-800/50 px-8 py-3 rounded-2xl border border-white/10 transition">Applications</button>
         </div>
 
+        <div class="flex justify-between items-center mb-8">
+            <h2 id="sectionTitle" class="text-2xl font-bold text-white">Manage Content</h2>
+            <button id="saveBtn" class="bg-cyan-500 text-slate-950 px-10 py-3 rounded-xl font-bold hover:bg-cyan-400 transition shadow-[0_0_20px_rgba(34,211,238,0.3)]">
+                Sync All Changes
+            </button>
+        </div>
+
         <section id="editorSection" class="space-y-8">
-            <div class="flex justify-between items-end">
-                <h2 class="text-2xl font-bold text-white">Manage Content</h2>
-                <div class="flex space-x-4">
-                    <button onclick="addProgramBox()" class="bg-slate-800 text-cyan-400 border border-cyan-500/30 px-6 py-2 rounded-xl font-bold hover:bg-cyan-500/10 transition">Add New Box</button>
-                    <button id="saveBtn" class="bg-cyan-500 text-slate-950 px-8 py-2 rounded-xl font-bold hover:bg-cyan-400 transition shadow-[0_0_20px_rgba(34,211,238,0.3)]">Sync All Changes</button>
-                </div>
+            <div class="flex justify-end">
+                <button onclick="addProgramBox()" class="bg-slate-800 text-cyan-400 border border-cyan-500/30 px-6 py-2 rounded-xl font-bold hover:bg-cyan-500/10 transition">Add New Box</button>
             </div>
             <div id="adminProgramsContainer" class="grid grid-cols-1 lg:grid-cols-3 gap-6"></div>
+        </section>
+
+        <section id="articlesSection" class="hidden space-y-8">
+            <div class="flex justify-end">
+                <button onclick="addArticleRow()" class="bg-slate-800 text-cyan-400 border border-cyan-500/30 px-6 py-2 rounded-xl font-bold hover:bg-cyan-500/10 transition">Add New Article</button>
+            </div>
+            <div id="articlesContainer" class="space-y-4"></div>
+        </section>
+
+        <section id="gallerySection" class="hidden space-y-8">
+            <div class="flex justify-end">
+                <button onclick="addGalleryRow()" class="bg-slate-800 text-cyan-400 border border-cyan-500/30 px-6 py-2 rounded-xl font-bold hover:bg-cyan-400/10 transition">Add New Photo URL</button>
+            </div>
+            <div id="galleryContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </section>
 
         <section id="appsSection" class="hidden glass-panel p-8">
@@ -76,21 +95,18 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB3tnoCO0MwfSM-FH95cC52OyUHzaouC8E",
             authDomain: "guercllc.firebaseapp.com",
             projectId: "guercllc",
             storageBucket: "guercllc.firebasestorage.app",
-            messagingSenderId: "450126717624",
             appId: "1:450126717624:web:4e152e748315b33cc68a4d"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const storage = getStorage(app);
 
         let currentCategory = 'academy';
 
@@ -111,8 +127,16 @@
 
         window.switchCategory = (cat, btn) => {
             currentCategory = cat;
-            document.getElementById('editorSection').classList.remove('hidden');
+            // Reset Views
+            document.getElementById('editorSection').classList.add('hidden');
             document.getElementById('appsSection').classList.add('hidden');
+            document.getElementById('articlesSection').classList.add('hidden');
+            document.getElementById('gallerySection').classList.add('hidden');
+            
+            if (cat === 'articles') document.getElementById('articlesSection').classList.remove('hidden');
+            else if (cat === 'gallery') document.getElementById('gallerySection').classList.remove('hidden');
+            else document.getElementById('editorSection').classList.remove('hidden');
+
             document.getElementById('currentViewLabel').innerText = cat;
             document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('tab-active'));
             btn.classList.add('tab-active');
@@ -121,6 +145,8 @@
 
         window.showApplications = (btn) => {
             document.getElementById('editorSection').classList.add('hidden');
+            document.getElementById('articlesSection').classList.add('hidden');
+            document.getElementById('gallerySection').classList.add('hidden');
             document.getElementById('appsSection').classList.remove('hidden');
             document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('tab-active'));
             btn.classList.add('tab-active');
@@ -129,13 +155,23 @@
 
         async function loadData(cat) {
             const snap = await getDoc(doc(db, "content", cat));
-            const container = document.getElementById('adminProgramsContainer');
-            container.innerHTML = "";
-            if (snap.exists() && snap.data().programs) {
-                snap.data().programs.forEach(p => addProgramBox(p));
+            
+            if (cat === 'articles') {
+                const container = document.getElementById('articlesContainer');
+                container.innerHTML = "";
+                if (snap.exists() && snap.data().items) snap.data().items.forEach(i => addArticleRow(i));
+            } else if (cat === 'gallery') {
+                const container = document.getElementById('galleryContainer');
+                container.innerHTML = "";
+                if (snap.exists() && snap.data().images) snap.data().images.forEach(url => addGalleryRow(url));
+            } else {
+                const container = document.getElementById('adminProgramsContainer');
+                container.innerHTML = "";
+                if (snap.exists() && snap.data().programs) snap.data().programs.forEach(p => addProgramBox(p));
             }
         }
 
+        // Row Generators
         window.addProgramBox = (data = {t:'', s:'', l:'', img:''}) => {
             const container = document.getElementById('adminProgramsContainer');
             const box = document.createElement('div');
@@ -143,26 +179,65 @@
             box.innerHTML = `
                 <div class="drag-handle text-slate-600 hover:text-cyan-400 transition-colors"><i class="fa-solid fa-grip-lines"></i></div>
                 <button onclick="this.parentElement.remove()" class="absolute top-6 right-6 text-red-400"><i class="fa-solid fa-trash"></i></button>
-                <input type="text" value="${data.t}" placeholder="Title (UZ | EN | TR)" class="prog-t w-full bg-slate-800/50 p-3 rounded-xl border border-white/10 text-white">
+                <input type="text" value="${data.t}" placeholder="Title" class="prog-t w-full bg-slate-800/50 p-3 rounded-xl border border-white/10 text-white">
                 <input type="text" value="${data.img || ''}" placeholder="Image URL" class="prog-img w-full bg-slate-800/50 p-3 rounded-xl border border-white/10 text-white">
-                <textarea placeholder="Short Summary" class="prog-s w-full bg-slate-800/50 p-3 rounded-xl h-20 border border-white/10 text-white">${data.s}</textarea>
-                <textarea placeholder="Full Details" class="prog-l w-full bg-slate-800/50 p-3 rounded-xl h-32 border border-white/10 text-white">${data.l}</textarea>
+                <textarea placeholder="Summary" class="prog-s w-full bg-slate-800/50 p-3 rounded-xl h-20 border border-white/10 text-white">${data.s}</textarea>
+                <textarea placeholder="Details" class="prog-l w-full bg-slate-800/50 p-3 rounded-xl h-32 border border-white/10 text-white">${data.l}</textarea>
             `;
             container.appendChild(box);
         };
 
+        window.addArticleRow = (data = {title:'', date:'', url:''}) => {
+            const container = document.getElementById('articlesContainer');
+            const row = document.createElement('div');
+            row.className = "glass-panel p-4 flex gap-4 items-center border border-white/5";
+            row.innerHTML = `
+                <input type="text" value="${data.title}" placeholder="Report Title" class="art-t flex-1 bg-slate-900/50 p-2 rounded-lg border border-white/10 text-white">
+                <input type="text" value="${data.date}" placeholder="Date" class="art-d w-32 bg-slate-900/50 p-2 rounded-lg border border-white/10 text-white">
+                <input type="text" value="${data.url}" placeholder="PDF URL" class="art-u flex-1 bg-slate-900/50 p-2 rounded-lg border border-white/10 text-white">
+                <button onclick="this.parentElement.remove()" class="text-red-400 px-2"><i class="fa-solid fa-trash"></i></button>
+            `;
+            container.appendChild(row);
+        };
+
+        window.addGalleryRow = (url = '') => {
+            const container = document.getElementById('galleryContainer');
+            const row = document.createElement('div');
+            row.className = "glass-panel p-4 flex gap-4 items-center border border-white/5";
+            row.innerHTML = `
+                <input type="text" value="${url}" placeholder="Image URL" class="gal-u flex-1 bg-slate-900/50 p-2 rounded-lg border border-white/10 text-white">
+                <button onclick="this.parentElement.remove()" class="text-red-400 px-2"><i class="fa-solid fa-trash"></i></button>
+            `;
+            container.appendChild(row);
+        };
+
+        // Unified Save Logic
         document.getElementById('saveBtn').onclick = async () => {
-            const cards = document.querySelectorAll('.program-admin-card');
-            const progs = Array.from(cards).map(c => ({
-                t: c.querySelector('.prog-t').value,
-                img: c.querySelector('.prog-img').value,
-                s: c.querySelector('.prog-s').value,
-                l: c.querySelector('.prog-l').value
-            }));
             try {
-                await setDoc(doc(db, "content", currentCategory), { programs: progs });
-                showToast("Data Synced Successfully!");
-            } catch (err) { showToast("Error: " + err.message, true); }
+                if (currentCategory === 'articles') {
+                    const items = Array.from(document.querySelectorAll('#articlesContainer > div')).map(row => ({
+                        title: row.querySelector('.art-t').value,
+                        date: row.querySelector('.art-d').value,
+                        url: row.querySelector('.art-u').value
+                    }));
+                    await setDoc(doc(db, "content", "articles"), { items });
+                } else if (currentCategory === 'gallery') {
+                    const images = Array.from(document.querySelectorAll('#galleryContainer input')).map(input => input.value).filter(v => v !== "");
+                    await setDoc(doc(db, "content", "gallery"), { images });
+                } else {
+                    const cards = document.querySelectorAll('.program-admin-card');
+                    const progs = Array.from(cards).map(c => ({
+                        t: c.querySelector('.prog-t').value,
+                        img: c.querySelector('.prog-img').value,
+                        s: c.querySelector('.prog-s').value,
+                        l: c.querySelector('.prog-l').value
+                    }));
+                    await setDoc(doc(db, "content", currentCategory), { programs: progs });
+                }
+                showToast("System Synced Successfully!");
+            } catch (err) { 
+                showToast("Sync Error: " + err.message, true); 
+            }
         };
 
         function loadApplications() {
@@ -179,6 +254,7 @@
                 });
             });
         }
+
         Sortable.create(document.getElementById('adminProgramsContainer'), { animation: 150, handle: '.drag-handle' });
     </script>
 </body>
