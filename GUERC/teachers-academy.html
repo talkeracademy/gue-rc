@@ -97,13 +97,12 @@
             setTimeout(() => alert.classList.remove('show'), 3000);
         }
 
-        // The Listener
+        // Dynamic Listener - Re-renders when DB or Language changes
         onSnapshot(doc(db, "content", PAGE_ID), (docSnap) => {
             const lang = localStorage.getItem('preferredLang') || 'en';
             const t = pageTranslations[lang];
-            const langIndex = lang === 'uz' ? 0 : (lang === 'en' ? 1 : 2);
 
-            // FIX: Match the ID to your HTML "nav-back-text"
+            // Update Page UI
             document.getElementById('nav-back-text').innerText = t.back;
             document.getElementById('page-title').innerText = t[PAGE_ID]; 
             document.getElementById('page-subtitle').innerText = t[PAGE_ID + 'Sub'];
@@ -123,10 +122,9 @@
                 }
 
                 programsData.forEach((prog, index) => {
-                    const titleParts = (prog.t || "").split('|');
-                    const descParts = (prog.s || "").split('|');
-                    const displayTitle = (titleParts[langIndex] || titleParts[0] || "No Title").trim();
-                    const displayDesc = (descParts[langIndex] || descParts[0] || "").trim();
+                    // THE GOLDEN FIX: Pick the specific language field from the DB
+                    const displayTitle = prog[`t_${lang}`] || prog.t_en || "No Title";
+                    const displayDesc = prog[`s_${lang}`] || prog.s_en || "";
 
                     grid.innerHTML += `
                         <div class="training-card bg-slate-900/40 rounded-3xl border border-white/5 flex flex-col h-full overflow-hidden">
@@ -146,21 +144,25 @@
             }
         });
 
-        // Attach functions to window so the HTML buttons can see them
-        window.showDetails = (index) => {
-            const prog = programsData[index];
-            const lang = localStorage.getItem('preferredLang') || 'en';
-            const langIndex = lang === 'uz' ? 0 : (lang === 'en' ? 1 : 2);
-            // logic for details modal...
-        };
-
+        // Handle Enrollment Name
         window.openEnroll = (index) => {
             const lang = localStorage.getItem('preferredLang') || 'en';
-            const langIndex = lang === 'uz' ? 0 : (lang === 'en' ? 1 : 2);
-            const name = (programsData[index].t.split('|')[langIndex] || programsData[index].t.split('|')[0]).trim();
+            const prog = programsData[index];
+            const name = prog[`t_${lang}`] || prog.t_en;
             document.getElementById('displayProgName').innerText = name;
             document.getElementById('selectedProgramName').value = name;
             document.getElementById('enrollModal').classList.remove('hidden');
+        };
+
+        // Show Full Details Modal (Optional logic)
+        window.showDetails = (index) => {
+            const lang = localStorage.getItem('preferredLang') || 'en';
+            const prog = programsData[index];
+            const details = prog[`l_${lang}`] || prog.l_en || "No details available.";
+            const title = prog[`t_${lang}`] || prog.t_en;
+            
+            // Use an alert or create a modal to show 'details'
+            alert(title + "\n\n" + details);
         };
 
         window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
@@ -183,6 +185,7 @@
             } catch (err) { showToast("Error: " + err.message, true); }
         };
 
+        // Theme Toggle
         const themeToggle = document.getElementById('themeToggle');
         if (localStorage.getItem('theme') === 'light') document.body.classList.add('light-mode');
         themeToggle.onclick = () => {

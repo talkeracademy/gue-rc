@@ -3,35 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reports & Articles | GUERC</title>
+    <title>Articles | GUERC</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
-        body { margin: 0; background: #020617; font-family: 'Inter', sans-serif; color: white; transition: all 0.5s ease; }
+        body { margin: 0; background: #020617; font-family: 'Inter', sans-serif; color: white; min-height: 100vh; }
         body.light-mode { background: #f8fafc; color: #0f172a; }
-        .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 32px; }
+        .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; }
         body.light-mode .glass-panel { background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(0, 0, 0, 0.05); }
-        .report-card { transition: all 0.3s ease; border: 1px solid rgba(255, 255, 255, 0.05); }
-        .report-card:hover { transform: translateY(-5px); background: rgba(34, 211, 238, 0.05); border-color: rgba(34, 211, 238, 0.3); }
+        .article-row { transition: all 0.3s ease; }
+        .article-row:hover { transform: translateX(10px); background: rgba(34, 211, 238, 0.05); }
     </style>
 </head>
 <body>
     <nav class="flex justify-between items-center p-10">
-        <a href="index.html" class="text-cyan-400 hover:text-cyan-300 transition flex items-center gap-2">
-            <i class="fa-solid fa-arrow-left"></i> <span>Back to Home</span>
+        <a href="index.html" class="flex items-center space-x-2 text-cyan-400 hover:text-cyan-300 transition">
+            <i class="fa-solid fa-arrow-left"></i> <span id="nav-back-text">Back to Home</span>
         </a>
-        <i id="themeToggle" class="fa-solid fa-moon text-2xl cursor-pointer hover:text-cyan-400 transition"></i>
+        <div class="flex items-center space-x-8 text-2xl">
+            <i id="themeToggle" class="fa-solid fa-moon cursor-pointer hover:text-cyan-400 transition"></i>
+        </div>
     </nav>
 
-    <main class="max-w-6xl mx-auto px-8 py-12">
-        <div class="glass-panel p-12">
-            <h1 class="text-5xl font-bold mb-4 text-cyan-400">Articles & Reports</h1>
-            <p class="text-slate-400 mb-12 text-lg">Official research publications and educational insights.</p>
-            
-            <div id="reportsList" class="space-y-6">
-                <div class="text-center py-20 opacity-40">Loading digital library...</div>
-            </div>
+    <main class="max-w-5xl mx-auto px-8 py-12">
+        <div class="mb-12">
+            <h1 id="page-title" class="text-5xl font-bold mb-4 tracking-tight text-cyan-400">Articles</h1>
+            <p id="page-subtitle" class="text-xl text-slate-400">Explore our latest research and publications.</p>
+        </div>
+        
+        <div id="articlesList" class="space-y-4">
+            <div class="text-center py-20 opacity-50">Loading articles...</div>
         </div>
     </main>
 
@@ -40,7 +42,7 @@
         import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyB3tnoCO0MwfSM-FH95cC52OyUHzaouC8E",
+            apiKey: "AIzaSyB3tnoCO0MwfSM-FH95cC52OyUHzaouC8E", 
             authDomain: "guercllc.firebaseapp.com",
             projectId: "guercllc",
             storageBucket: "guercllc.firebasestorage.app",
@@ -50,29 +52,45 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        const pageTranslations = {
+            uz: { back: "Bosh sahifaga qaytish", title: "Maqolalar", subtitle: "Bizning so'nggi tadqiqotlarimiz va nashrlarimiz.", read: "O'qish" },
+            en: { back: "Back to Home", title: "Articles", subtitle: "Explore our latest research and publications.", read: "Read PDF" },
+            tr: { back: "Ana Sayfaya Dön", title: "Makaleler", subtitle: "En son araştırmalarımızı ve yayınlarımızı keşfedin.", read: "PDF Oku" }
+        };
+
         onSnapshot(doc(db, "content", "articles"), (docSnap) => {
-            const list = document.getElementById('reportsList');
+            const lang = localStorage.getItem('preferredLang') || 'en';
+            const t = pageTranslations[lang];
+
+            // Update static text
+            document.getElementById('nav-back-text').innerText = t.back;
+            document.getElementById('page-title').innerText = t.title;
+            document.getElementById('page-subtitle').innerText = t.subtitle;
+
+            const listContainer = document.getElementById('articlesList');
+            
             if (docSnap.exists() && docSnap.data().items) {
-                list.innerHTML = "";
-                docSnap.data().items.forEach(item => {
-                    list.innerHTML += `
-                        <div class="report-card p-6 rounded-2xl flex items-center justify-between gap-6">
-                            <div class="flex items-center gap-6">
-                                <div class="w-16 h-16 bg-cyan-500/10 rounded-xl flex items-center justify-center text-cyan-400 text-3xl">
-                                    <i class="fa-solid fa-file-pdf"></i>
-                                </div>
-                                <div>
-                                    <h3 class="text-xl font-bold">${item.title}</h3>
-                                    <p class="text-slate-500 text-sm">${item.date || 'Research Paper'}</p>
-                                </div>
+                const articles = docSnap.data().items;
+                listContainer.innerHTML = "";
+
+                articles.forEach(art => {
+                    // Logic to pick the right language title
+                    const displayTitle = art[`t_${lang}`] || art.t_en || "Untitled Article";
+                    
+                    listContainer.innerHTML += `
+                        <div class="article-row glass-panel p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-white/5">
+                            <div class="flex-1">
+                                <span class="text-[10px] uppercase tracking-[0.3em] text-cyan-500 font-bold">${art.date || 'RECENT'}</span>
+                                <h3 class="text-xl font-bold text-white mt-1">${displayTitle}</h3>
                             </div>
-                            <a href="${item.url}" target="_blank" class="px-8 py-3 bg-cyan-500 text-slate-950 font-bold rounded-xl hover:bg-cyan-400 transition">
-                                Open Report
+                            <a href="${art.url}" target="_blank" class="bg-cyan-500 text-slate-950 px-6 py-3 rounded-xl font-bold hover:bg-cyan-400 transition flex items-center gap-2 whitespace-nowrap">
+                                <i class="fa-solid fa-file-pdf"></i> ${t.read}
                             </a>
-                        </div>`;
+                        </div>
+                    `;
                 });
             } else {
-                list.innerHTML = "<p class='text-center opacity-50'>No articles found yet.</p>";
+                listContainer.innerHTML = "<p class='opacity-50 text-center'>No articles found.</p>";
             }
         });
 

@@ -172,30 +172,55 @@
         }
 
         // Row Generators
-        window.addProgramBox = (data = {t:'', s:'', l:'', img:''}) => {
+        window.addProgramBox = (data = {t_uz:'', t_en:'', t_tr:'', s_uz:'', s_en:'', s_tr:'', l_uz:'', l_en:'', l_tr:'', img:''}) => {
             const container = document.getElementById('adminProgramsContainer');
             const box = document.createElement('div');
             box.className = "program-admin-card glass-panel p-6 space-y-4 relative border border-white/5";
             box.innerHTML = `
                 <div class="drag-handle text-slate-600 hover:text-cyan-400 transition-colors"><i class="fa-solid fa-grip-lines"></i></div>
                 <button onclick="this.parentElement.remove()" class="absolute top-6 right-6 text-red-400"><i class="fa-solid fa-trash"></i></button>
-                <input type="text" value="${data.t}" placeholder="Title" class="prog-t w-full bg-slate-800/50 p-3 rounded-xl border border-white/10 text-white">
+                
                 <input type="text" value="${data.img || ''}" placeholder="Image URL" class="prog-img w-full bg-slate-800/50 p-3 rounded-xl border border-white/10 text-white">
-                <textarea placeholder="Summary" class="prog-s w-full bg-slate-800/50 p-3 rounded-xl h-20 border border-white/10 text-white">${data.s}</textarea>
-                <textarea placeholder="Details" class="prog-l w-full bg-slate-800/50 p-3 rounded-xl h-32 border border-white/10 text-white">${data.l}</textarea>
+                
+                <p class="text-[10px] uppercase tracking-widest opacity-40">Titles</p>
+                <div class="grid grid-cols-3 gap-2">
+                    <input type="text" value="${data.t_uz || ''}" placeholder="UZ" class="prog-t-uz bg-slate-900 p-2 rounded-lg border border-white/10 text-xs text-white">
+                    <input type="text" value="${data.t_en || ''}" placeholder="EN" class="prog-t-en bg-slate-900 p-2 rounded-lg border border-white/10 text-xs text-white">
+                    <input type="text" value="${data.t_tr || ''}" placeholder="TR" class="prog-t-tr bg-slate-900 p-2 rounded-lg border border-white/10 text-xs text-white">
+                </div>
+
+                <p class="text-[10px] uppercase tracking-widest opacity-40">Short Summaries</p>
+                <div class="grid grid-cols-3 gap-2">
+                    <textarea placeholder="UZ" class="prog-s-uz bg-slate-900 p-2 rounded-lg border border-white/10 text-xs text-white h-20">${data.s_uz || ''}</textarea>
+                    <textarea placeholder="EN" class="prog-s-en bg-slate-900 p-2 rounded-lg border border-white/10 text-xs text-white h-20">${data.s_en || ''}</textarea>
+                    <textarea placeholder="TR" class="prog-s-tr bg-slate-900 p-2 rounded-lg border border-white/10 text-xs text-white h-20">${data.s_tr || ''}</textarea>
+                </div>
+
+                <p class="text-[10px] uppercase tracking-widest opacity-40">Full Details (Modal)</p>
+                <div class="grid grid-cols-3 gap-2">
+                    <textarea placeholder="UZ" class="prog-l-uz bg-slate-900 p-2 rounded-lg border border-white/10 text-xs text-white h-32">${data.l_uz || ''}</textarea>
+                    <textarea placeholder="EN" class="prog-l-en bg-slate-900 p-2 rounded-lg border border-white/10 text-xs text-white h-32">${data.l_en || ''}</textarea>
+                    <textarea placeholder="TR" class="prog-l-tr bg-slate-900 p-2 rounded-lg border border-white/10 text-xs text-white h-32">${data.l_tr || ''}</textarea>
+                </div>
             `;
             container.appendChild(box);
         };
 
-        window.addArticleRow = (data = {title:'', date:'', url:''}) => {
+        window.addArticleRow = (data = {t_uz:'', t_en:'', t_tr:'', date:'', url:''}) => {
             const container = document.getElementById('articlesContainer');
             const row = document.createElement('div');
-            row.className = "glass-panel p-4 flex gap-4 items-center border border-white/5";
+            row.className = "glass-panel p-4 space-y-3 border border-white/5";
             row.innerHTML = `
-                <input type="text" value="${data.title}" placeholder="Report Title" class="art-t flex-1 bg-slate-900/50 p-2 rounded-lg border border-white/10 text-white">
-                <input type="text" value="${data.date}" placeholder="Date" class="art-d w-32 bg-slate-900/50 p-2 rounded-lg border border-white/10 text-white">
-                <input type="text" value="${data.url}" placeholder="PDF URL" class="art-u flex-1 bg-slate-900/50 p-2 rounded-lg border border-white/10 text-white">
-                <button onclick="this.parentElement.remove()" class="text-red-400 px-2"><i class="fa-solid fa-trash"></i></button>
+                <div class="grid grid-cols-3 gap-2">
+                    <input type="text" value="${data.t_uz || ''}" placeholder="Title (UZ)" class="art-t-uz bg-slate-900/50 p-2 rounded-lg border border-white/10 text-white text-xs">
+                    <input type="text" value="${data.t_en || ''}" placeholder="Title (EN)" class="art-t-en bg-slate-900/50 p-2 rounded-lg border border-white/10 text-white text-xs">
+                    <input type="text" value="${data.t_tr || ''}" placeholder="Title (TR)" class="art-t-tr bg-slate-900/50 p-2 rounded-lg border border-white/10 text-white text-xs">
+                </div>
+                <div class="flex gap-4">
+                    <input type="text" value="${data.date || ''}" placeholder="Date" class="art-d w-32 bg-slate-900/50 p-2 rounded-lg border border-white/10 text-white text-xs">
+                    <input type="text" value="${data.url || ''}" placeholder="PDF URL" class="art-u flex-1 bg-slate-900/50 p-2 rounded-lg border border-white/10 text-white text-xs">
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-red-400 px-2"><i class="fa-solid fa-trash"></i></button>
+                </div>
             `;
             container.appendChild(row);
         };
@@ -216,7 +241,10 @@
             try {
                 if (currentCategory === 'articles') {
                     const items = Array.from(document.querySelectorAll('#articlesContainer > div')).map(row => ({
-                        title: row.querySelector('.art-t').value,
+                        // We add UZ, EN, TR for Article titles too
+                        t_uz: row.querySelector('.art-t-uz').value,
+                        t_en: row.querySelector('.art-t-en').value,
+                        t_tr: row.querySelector('.art-t-tr').value,
                         date: row.querySelector('.art-d').value,
                         url: row.querySelector('.art-u').value
                     }));
@@ -227,10 +255,17 @@
                 } else {
                     const cards = document.querySelectorAll('.program-admin-card');
                     const progs = Array.from(cards).map(c => ({
-                        t: c.querySelector('.prog-t').value,
                         img: c.querySelector('.prog-img').value,
-                        s: c.querySelector('.prog-s').value,
-                        l: c.querySelector('.prog-l').value
+                        // The "Golden" triple-language save for Programs
+                        t_uz: c.querySelector('.prog-t-uz').value,
+                        t_en: c.querySelector('.prog-t-en').value,
+                        t_tr: c.querySelector('.prog-t-tr').value,
+                        s_uz: c.querySelector('.prog-s-uz').value,
+                        s_en: c.querySelector('.prog-s-en').value,
+                        s_tr: c.querySelector('.prog-s-tr').value,
+                        l_uz: c.querySelector('.prog-l-uz').value,
+                        l_en: c.querySelector('.prog-l-en').value,
+                        l_tr: c.querySelector('.prog-l-tr').value
                     }));
                     await setDoc(doc(db, "content", currentCategory), { programs: progs });
                 }

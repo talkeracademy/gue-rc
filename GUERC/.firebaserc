@@ -1,5 +1,19 @@
 {
-  "projects": {
-    "default": "guercllc"
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      { "source": "/admin", "destination": "/admin.html" },
+      { "source": "/teachers-academy", "destination": "/teachers-academy.html" },
+      { "source": "/international-camps", "destination": "/international-camps.html" },
+      { "source": "/international-olympics", "destination": "/international-olympics.html" },
+      { "source": "/scholarships", "destination": "/scholarships.html" },
+      { "source": "/articles", "destination": "/articles.html" },
+      { "source": "/gallery", "destination": "/gallery.html" }
+    ]
   }
 }
