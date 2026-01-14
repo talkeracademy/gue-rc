@@ -77,6 +77,13 @@
             .nav-item i { font-size: 2.8rem; }
         }
 
+        /* Mobile specific fix for iPhone layout */
+        @media (max-width: 640px) {
+            #main-title { font-size: 1.25rem !important; line-height: 1.2; }
+            nav { padding: 1rem !important; }
+            .nav-item span { font-size: 0.65rem; }
+        }
+
         .nav-item span {
             font-size: 0.75rem;
             font-weight: 500;
@@ -237,6 +244,7 @@
     </div>
 
     <script>
+        // Particle Background Logic
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
@@ -276,18 +284,21 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB3tnoCO0MwfSM-FH95cC52OyUHzaouC8E",
             authDomain: "guercllc.firebaseapp.com",
             projectId: "guercllc",
             storageBucket: "guercllc.firebasestorage.app",
-            appId: "1:450126717624:web:4e152e748315b33cc68a4d"
+            appId: "1:450126717624:web:4e152e748315b33cc68a4d",
+            measurementId: "G-XXXXXXXXXX" // Ensure this matches your Firebase Console
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
+        const analytics = getAnalytics(app);
 
         // UI HELPERS
         function showToast(message, isError = false) {
@@ -357,6 +368,8 @@
             document.getElementById('modal-mission-p').innerText = data.missionP;
             document.getElementById('modal-vision-title').innerText = data.visionT;
             document.getElementById('modal-vision-p').innerText = data.visionP;
+            
+            logEvent(analytics, 'language_changed', { language: lang });
         };
 
         document.getElementById('homeContactForm').onsubmit = async (e) => {
@@ -371,6 +384,7 @@
                     date: new Date().toISOString()
                 });
                 showToast(translations[lang].success);
+                logEvent(analytics, 'contact_form_submitted');
                 e.target.reset();
             } catch (err) { showToast(err.message, true); }
         };
@@ -382,7 +396,10 @@
         let isLogin = true;
 
         userBtn.onclick = () => authModal.classList.remove('hidden');
-        logoutBtn.onclick = () => signOut(auth);
+        logoutBtn.onclick = () => {
+            signOut(auth);
+            logEvent(analytics, 'logout');
+        };
         
         document.getElementById('toggleAuth').onclick = () => {
             isLogin = !isLogin;
@@ -397,16 +414,19 @@
             try {
                 if(isLogin) {
                     await signInWithEmailAndPassword(auth, email, pass);
+                    logEvent(analytics, 'login_success');
                 } else {
-                    // SECURE REGISTRATION WITH EMAIL VERIFICATION
                     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
                     await sendEmailVerification(userCredential.user);
                     showToast(translations[lang].verifyEmail);
-                    // Sign out until verified
-                    await signOut(auth);
+                    logEvent(analytics, 'signup_initiated');
+                    await signOut(auth); // Force logout until verified
                 }
                 authModal.classList.add('hidden');
-            } catch (e) { showToast(e.message, true); }
+            } catch (e) { 
+                showToast(e.message, true); 
+                logEvent(analytics, 'auth_error', { error: e.message });
+            }
         };
 
         onAuthStateChanged(auth, (u) => {
@@ -414,7 +434,10 @@
             logoutBtn.classList.toggle('hidden', !u);
         });
 
-        document.getElementById('openAboutBtn').onclick = () => document.getElementById('aboutModal').classList.remove('hidden');
+        document.getElementById('openAboutBtn').onclick = () => {
+            document.getElementById('aboutModal').classList.remove('hidden');
+            logEvent(analytics, 'view_about_modal');
+        };
         document.getElementById('closeAboutBtn').onclick = () => document.getElementById('aboutModal').classList.add('hidden');
 
         const themeToggle = document.getElementById('themeToggle');
@@ -423,6 +446,7 @@
             const isLight = document.body.classList.contains('light-mode');
             themeToggle.classList.replace(isLight ? 'fa-moon' : 'fa-sun', isLight ? 'fa-sun' : 'fa-moon');
             localStorage.setItem('theme', isLight ? 'light' : 'dark');
+            logEvent(analytics, 'theme_toggled', { theme: isLight ? 'light' : 'dark' });
         };
 
         // INITIAL LOAD

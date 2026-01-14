@@ -6,11 +6,24 @@
       "**/.*",
       "**/node_modules/**"
     ],
+    "headers": [
+      {
+        "source": "/**",
+        "headers": [
+          { "key": "Content-Security-Policy", "value": "default-src 'self' https://*.gstatic.com https://*.googleapis.com https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline' https://*.gstatic.com https://*.googleapis.com https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://flagcdn.com;" },
+          { "key": "X-Frame-Options", "value": "DENY" },
+          { "key": "X-Content-Type-Options", "value": "nosniff" },
+          { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+          { "key": "Permissions-Policy", "value": "geolocation=(), microphone=(), camera=()" },
+          { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains; preload" }
+        ]
+      }
+    ],
     "rewrites": [
-      { "source": "/admin", "destination": "/admin.html" },
-      { "source": "/admin-academy", "destination": "/admin-academy.html" },
-      { "source": "/admin-applications", "destination": "/admin-applications.html" },
-      { "source": "/teachers-academy", "destination": "/teachers-academy.html" }
+      {
+        "source": "**",
+        "destination": "/404.html"
+      }
     ]
   }
 }
