@@ -6,14 +6,28 @@
       "**/.*",
       "**/node_modules/**"
     ],
-    "rewrites": [
-      { "source": "/admin", "destination": "/admin.html" },
-      { "source": "/teachers-academy", "destination": "/teachers-academy.html" },
-      { "source": "/international-camps", "destination": "/international-camps.html" },
-      { "source": "/international-olympics", "destination": "/international-olympics.html" },
-      { "source": "/scholarships", "destination": "/scholarships.html" },
-      { "source": "/articles", "destination": "/articles.html" },
-      { "source": "/gallery", "destination": "/gallery.html" }
+    "headers": [
+      {
+        "source": "/**",
+        "headers": [
+          {
+            "key": "X-Frame-Options",
+            "value": "DENY"
+          },
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "Permissions-Policy",
+            "value": "geolocation=(), microphone=(), camera=()"
+          },
+          {
+            "key": "Content-Security-Policy",
+            "value": "default-src 'self' https://*.gstatic.com https://*.googleapis.com https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline' https://*.gstatic.com https://*.googleapis.com https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https://flagcdn.com;"
+          }
+        ]
+      }
     ]
   }
 }
