@@ -80,6 +80,16 @@
         }
 
         html { scroll-behavior: smooth; }
+
+        /* Smooth Toast Animation */
+        #toast.show {
+            animation: slideUp 0.5s forwards, fadeOut 0.5s 3.5s forwards;
+        }
+
+        @keyframes slideUp {
+            from { transform: translate(-50%, 100%); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -163,6 +173,13 @@
             </form>
         </div>
     </section>
+
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] hidden">
+        <div class="glass-panel px-8 py-4 flex items-center space-x-4 border-cyan-500/50 shadow-[0_0_20px_rgba(34,211,238,0.2)]">
+            <i id="toastIcon" class="fa-solid fa-circle-check text-cyan-400 text-xl"></i>
+            <span id="toastMessage" class="font-medium text-sm"></span>
+        </div>
+    </div>
 
     <section id="partners-section" class="max-w-6xl mx-auto px-8 py-24 border-t border-white/5">
         <h2 class="text-center text-slate-500 uppercase tracking-[0.4em] text-[10px] mb-16">Official Strategic Partners</h2>
@@ -268,7 +285,25 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // 1. TRANSLATIONS DATA
+        // TOAST FUNCTION
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+            toastMsg.innerText = message;
+            if (isError) {
+                toastIcon.className = "fa-solid fa-circle-exclamation text-red-400 text-xl";
+                toast.querySelector('.glass-panel').classList.add('border-red-500/50');
+                toast.querySelector('.glass-panel').classList.remove('border-cyan-500/50');
+            } else {
+                toastIcon.className = "fa-solid fa-circle-check text-cyan-400 text-xl";
+                toast.querySelector('.glass-panel').classList.remove('border-red-500/50');
+                toast.querySelector('.glass-panel').classList.add('border-cyan-500/50');
+            }
+            toast.classList.remove('hidden');
+            setTimeout(() => { toast.classList.add('hidden'); }, 4000);
+        }
+
         const translations = {
             uz: {
                 flag: "https://flagcdn.com/w40/uz.png",
@@ -302,7 +337,6 @@
             }
         };
 
-        // 2. LANGUAGE SWITCHER
         window.changeLang = (lang) => {
             const data = translations[lang];
             localStorage.setItem('preferredLang', lang);
@@ -317,8 +351,6 @@
             document.getElementById('txt-partners').innerText = data.partners;
             document.getElementById('txt-articles').innerText = data.articles;
             document.getElementById('txt-gallery').innerText = data.gallery;
-            
-            // Contact & Modal
             document.getElementById('txt-contact-title').innerText = data.contactT;
             document.getElementById('txt-send-btn').innerText = data.send;
             document.getElementById('modal-about-title').innerText = data.aboutT;
@@ -329,7 +361,6 @@
             document.getElementById('modal-vision-p').innerText = data.visionP;
         };
 
-        // 3. CONTACT FORM SUBMISSION
         document.getElementById('homeContactForm').onsubmit = async (e) => {
             e.preventDefault();
             const lang = localStorage.getItem('preferredLang') || 'uz';
@@ -341,12 +372,11 @@
                     message: document.getElementById('contactMessage').value,
                     date: new Date().toISOString()
                 });
-                alert(translations[lang].success);
+                showToast(translations[lang].success);
                 e.target.reset();
-            } catch (err) { alert("Error: " + err.message); }
+            } catch (err) { showToast(err.message, true); }
         };
 
-        // 4. AUTH & UI
         const authModal = document.getElementById('authModal');
         const userBtn = document.getElementById('userBtn');
         const logoutBtn = document.getElementById('memberLogoutBtn');
@@ -370,12 +400,11 @@
                     await signInWithEmailAndPassword(auth, email, pass);
                 } else {
                     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-                    // NEW: Automatic Email Verification Trigger
                     await sendEmailVerification(userCredential.user);
-                    alert(translations[lang].verifyEmail);
+                    showToast(translations[lang].verifyEmail);
                 }
                 authModal.classList.add('hidden');
-            } catch (e) { alert(e.message); }
+            } catch (e) { showToast(e.message, true); }
         };
 
         onAuthStateChanged(auth, (u) => {
@@ -383,7 +412,6 @@
             logoutBtn.classList.toggle('hidden', !u);
         });
 
-        // 5. MODALS & THEME
         document.getElementById('openAboutBtn').onclick = () => document.getElementById('aboutModal').classList.remove('hidden');
         document.getElementById('closeAboutBtn').onclick = () => document.getElementById('aboutModal').classList.add('hidden');
 
@@ -395,7 +423,6 @@
             localStorage.setItem('theme', isLight ? 'light' : 'dark');
         };
 
-        // INIT
         const savedLang = localStorage.getItem('preferredLang') || 'uz';
         window.changeLang(savedLang);
         if (localStorage.getItem('theme') === 'light') {
