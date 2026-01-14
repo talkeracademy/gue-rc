@@ -124,9 +124,17 @@
 
         let currentCategory = 'academy';
 
+        // Security Gate: Verification & Auth check
         onAuthStateChanged(auth, (user) => {
-            if (!user) window.location.href = 'index.html';
-            loadData('academy');
+            if (!user) {
+                window.location.href = 'index.html';
+            } else if (!user.emailVerified) {
+                alert("Please verify your email before accessing the Admin Panel.");
+                signOut(auth);
+                window.location.href = 'index.html';
+            } else {
+                loadData('academy');
+            }
         });
 
         document.getElementById('logoutBtn').onclick = () => signOut(auth);
@@ -149,6 +157,8 @@
             toast.classList.add('show');
             setTimeout(() => { toast.classList.remove('show'); toast.classList.add('hidden'); }, 4000);
         }
+
+        // --- UI HANDLERS ---
 
         window.switchCardLang = (btn, lang) => {
             const card = btn.closest('.program-admin-card');
@@ -191,6 +201,8 @@
             loadApplications();
         };
 
+        // --- DATA LOADERS ---
+
         async function loadData(cat) {
             const snap = await getDoc(doc(db, "content", cat));
             if (cat === 'articles') {
@@ -207,6 +219,8 @@
                 if (snap.exists() && snap.data().programs) snap.data().programs.forEach(p => addProgramBox(p));
             }
         }
+
+        // --- DOM MANIPULATORS ---
 
         window.addProgramBox = (data = {t_uz:'', t_en:'', t_tr:'', s_uz:'', s_en:'', s_tr:'', l_uz:'', l_en:'', l_tr:'', img:''}) => {
             const container = document.getElementById('adminProgramsContainer');
@@ -274,6 +288,8 @@
             `;
             container.appendChild(row);
         };
+
+        // --- DATABASE OPERATIONS ---
 
         document.getElementById('saveBtn').onclick = async () => {
             try {
@@ -367,6 +383,8 @@
             } catch (err) { showToast("Update failed", true); }
         };
 
+        // --- EXPORT TO CSV ---
+
         document.getElementById('exportCsvBtn').onclick = async () => {
             try {
                 const snap = await getDocs(query(collection(db, "applications"), orderBy("date", "desc")));
@@ -375,7 +393,6 @@
                 snap.forEach(d => {
                     const a = d.data();
                     const date = new Date(a.date).toLocaleDateString();
-                    // Escape quotes and commas for CSV safety
                     const name = `"${(a.name || '').replace(/"/g, '""')}"`;
                     const email = `"${(a.email || '').replace(/"/g, '""')}"`;
                     const category = `"${(a.category || a.program || '').replace(/"/g, '""')}"`;
