@@ -20,9 +20,9 @@
         #custom-alert.show { transform: translateY(0); opacity: 1; }
         .alert-glass { background: rgba(34, 211, 238, 0.15); backdrop-filter: blur(15px); border: 1px solid rgba(34, 211, 238, 0.3); padding: 1rem 2rem; border-radius: 20px; display: flex; align-items: center; gap: 12px; }
         
-        /* Mini-Tab Styles for Cards */
-        .lang-tab { padding: 4px 12px; border-radius: 8px; font-size: 11px; cursor: pointer; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; font-weight: bold; }
-        .lang-tab.active { background: #22d3ee; color: #020617; border-color: #22d3ee; }
+        /* Language Tab Styles */
+        .lang-tab { padding: 6px 14px; border-radius: 10px; font-size: 11px; cursor: pointer; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #94a3b8; }
+        .lang-tab.active { background: #22d3ee; color: #020617; border-color: #22d3ee; font-weight: bold; }
         .lang-content { display: none; }
         .lang-content.active { display: block; }
     </style>
@@ -34,7 +34,7 @@
             <p id="currentViewLabel" class="text-[11px] tracking-[0.5em] uppercase opacity-50 mt-1">Teachers Academy</p>
         </div>
         <div class="flex items-center space-x-6">
-            <a href="index.html" class="text-xs border border-white/20 px-4 py-2 rounded-full hover:bg-white/10 transition">View Website</a>
+            <a href="index.html" target="_blank" class="text-xs border border-white/20 px-4 py-2 rounded-full hover:bg-white/10 transition">View Website</a>
             <button id="logoutBtn" class="text-xs bg-red-500/20 text-red-400 px-4 py-2 rounded-full border border-red-500/30 hover:bg-red-500/40 transition">Logout</button>
         </div>
     </nav>
@@ -61,20 +61,16 @@
             <div class="flex justify-end">
                 <button onclick="addProgramBox()" class="bg-slate-800 text-cyan-400 border border-cyan-500/30 px-6 py-2 rounded-xl font-bold hover:bg-cyan-500/10 transition">Add New Box</button>
             </div>
-            <div id="adminProgramsContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+            <div id="adminProgramsContainer" class="grid grid-cols-1 lg:grid-cols-2 gap-8"></div>
         </section>
 
         <section id="articlesSection" class="hidden space-y-8">
-            <div class="flex justify-end">
-                <button onclick="addArticleRow()" class="bg-slate-800 text-cyan-400 border border-cyan-500/30 px-6 py-2 rounded-xl font-bold hover:bg-cyan-500/10 transition">Add New Article</button>
-            </div>
+            <div class="flex justify-end"><button onclick="addArticleRow()" class="bg-slate-800 text-cyan-400 border border-cyan-500/30 px-6 py-2 rounded-xl font-bold hover:bg-cyan-500/10 transition">Add New Article</button></div>
             <div id="articlesContainer" class="space-y-4"></div>
         </section>
 
         <section id="gallerySection" class="hidden space-y-8">
-            <div class="flex justify-end">
-                <button onclick="addGalleryRow()" class="bg-slate-800 text-cyan-400 border border-cyan-500/30 px-6 py-2 rounded-xl font-bold hover:bg-cyan-400/10 transition">Add New Photo URL</button>
-            </div>
+            <div class="flex justify-end"><button onclick="addGalleryRow()" class="bg-slate-800 text-cyan-400 border border-cyan-500/30 px-6 py-2 rounded-xl font-bold hover:bg-cyan-400/10 transition">Add New Photo URL</button></div>
             <div id="galleryContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
         </section>
 
@@ -84,9 +80,7 @@
                 <table class="w-full text-left">
                     <thead>
                         <tr class="text-cyan-500 border-b border-white/10 text-sm">
-                            <th class="p-4">Student</th>
-                            <th class="p-4">Program</th>
-                            <th class="p-4">Date</th>
+                            <th class="p-4">Student</th><th class="p-4">Program</th><th class="p-4">Date</th>
                         </tr>
                     </thead>
                     <tbody id="applicationList" class="text-slate-300"></tbody>
@@ -131,11 +125,15 @@
             setTimeout(() => alert.classList.remove('show'), 3000);
         }
 
-        // Global Mini-Tab Switcher
+        // Logic Fix: Explicitly toggle visibility without touching the value of the inputs
         window.switchCardLang = (btn, lang) => {
             const card = btn.closest('.program-admin-card');
+            
+            // Tab button UI
             card.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
             btn.classList.add('active');
+            
+            // Content visibility
             card.querySelectorAll('.lang-content').forEach(c => c.classList.remove('active'));
             card.querySelector(`.lang-content.${lang}`).classList.add('active');
         };
@@ -187,36 +185,66 @@
         window.addProgramBox = (data = {t_uz:'', t_en:'', t_tr:'', s_uz:'', s_en:'', s_tr:'', l_uz:'', l_en:'', l_tr:'', img:''}) => {
             const container = document.getElementById('adminProgramsContainer');
             const box = document.createElement('div');
-            box.className = "program-admin-card glass-panel p-6 space-y-4 relative border border-white/5";
+            box.className = "program-admin-card glass-panel p-8 space-y-4 relative border border-white/5";
             box.innerHTML = `
-                <div class="flex justify-between items-center mb-2">
-                    <div class="drag-handle text-slate-600 hover:text-cyan-400 transition-colors"><i class="fa-solid fa-grip-lines"></i></div>
-                    <div class="flex gap-2">
-                        <button onclick="switchCardLang(this, 'uz')" class="lang-tab active">UZ</button>
-                        <button onclick="switchCardLang(this, 'en')" class="lang-tab">EN</button>
-                        <button onclick="switchCardLang(this, 'tr')" class="lang-tab">TR</button>
+                <div class="flex justify-between items-center mb-4">
+                    <div class="drag-handle text-slate-600 hover:text-cyan-400 cursor-grab px-2"><i class="fa-solid fa-grip-lines"></i></div>
+                    <div class="flex gap-2 bg-slate-900/50 p-1 rounded-xl">
+                        <button type="button" onclick="switchCardLang(this, 'uz')" class="lang-tab active">UZ</button>
+                        <button type="button" onclick="switchCardLang(this, 'en')" class="lang-tab">EN</button>
+                        <button type="button" onclick="switchCardLang(this, 'tr')" class="lang-tab">TR</button>
                     </div>
-                    <button onclick="this.parentElement.parentElement.remove()" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash text-sm"></i></button>
+                    <button type="button" onclick="this.parentElement.parentElement.remove()" class="text-red-400 hover:text-red-300 transition-colors"><i class="fa-solid fa-trash text-sm"></i></button>
                 </div>
                 
-                <input type="text" value="${data.img || ''}" placeholder="Image URL" class="prog-img w-full bg-slate-800/50 p-3 rounded-xl border border-white/10 text-white text-xs">
+                <div class="mb-4">
+                    <p class="text-[10px] uppercase tracking-widest opacity-40 mb-2">General Info</p>
+                    <input type="text" value="${data.img || ''}" placeholder="Image URL (e.g., https://site.com/photo.jpg)" class="prog-img w-full bg-slate-800/80 p-3 rounded-xl border border-white/10 text-white text-xs">
+                </div>
                 
-                <div class="lang-content uz active space-y-3">
-                    <input type="text" value="${data.t_uz || ''}" placeholder="Title (UZ)" class="prog-t-uz w-full bg-slate-900 p-3 rounded-xl border border-cyan-500/20 text-white font-bold">
-                    <textarea placeholder="Short Summary (UZ)" class="prog-s-uz w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-20">${data.s_uz || ''}</textarea>
-                    <textarea placeholder="Long Details (UZ)" class="prog-l-uz w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-48">${data.l_uz || ''}</textarea>
+                <div class="lang-content uz active space-y-4">
+                    <div>
+                        <p class="text-[10px] uppercase text-cyan-400 font-bold mb-1">Title (UZ)</p>
+                        <input type="text" value="${data.t_uz || ''}" class="prog-t-uz w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-white">
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase text-cyan-400 font-bold mb-1">Short Description (UZ)</p>
+                        <textarea class="prog-s-uz w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-20">${data.s_uz || ''}</textarea>
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase text-cyan-400 font-bold mb-1">Full Content (UZ)</p>
+                        <textarea class="prog-l-uz w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-48">${data.l_uz || ''}</textarea>
+                    </div>
                 </div>
 
-                <div class="lang-content en space-y-3">
-                    <input type="text" value="${data.t_en || ''}" placeholder="Title (EN)" class="prog-t-en w-full bg-slate-900 p-3 rounded-xl border border-cyan-500/20 text-white font-bold">
-                    <textarea placeholder="Short Summary (EN)" class="prog-s-en w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-20">${data.s_en || ''}</textarea>
-                    <textarea placeholder="Long Details (EN)" class="prog-l-en w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-48">${data.l_en || ''}</textarea>
+                <div class="lang-content en space-y-4">
+                    <div>
+                        <p class="text-[10px] uppercase text-cyan-400 font-bold mb-1">Title (EN)</p>
+                        <input type="text" value="${data.t_en || ''}" class="prog-t-en w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-white">
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase text-cyan-400 font-bold mb-1">Short Description (EN)</p>
+                        <textarea class="prog-s-en w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-20">${data.s_en || ''}</textarea>
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase text-cyan-400 font-bold mb-1">Full Content (EN)</p>
+                        <textarea class="prog-l-en w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-48">${data.l_en || ''}</textarea>
+                    </div>
                 </div>
 
-                <div class="lang-content tr space-y-3">
-                    <input type="text" value="${data.t_tr || ''}" placeholder="Title (TR)" class="prog-t-tr w-full bg-slate-900 p-3 rounded-xl border border-cyan-500/20 text-white font-bold">
-                    <textarea placeholder="Short Summary (TR)" class="prog-s-tr w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-20">${data.s_tr || ''}</textarea>
-                    <textarea placeholder="Long Details (TR)" class="prog-l-tr w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-48">${data.l_tr || ''}</textarea>
+                <div class="lang-content tr space-y-4">
+                    <div>
+                        <p class="text-[10px] uppercase text-cyan-400 font-bold mb-1">Title (TR)</p>
+                        <input type="text" value="${data.t_tr || ''}" class="prog-t-tr w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-white">
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase text-cyan-400 font-bold mb-1">Short Description (TR)</p>
+                        <textarea class="prog-s-tr w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-20">${data.s_tr || ''}</textarea>
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase text-cyan-400 font-bold mb-1">Full Content (TR)</p>
+                        <textarea class="prog-l-tr w-full bg-slate-900 p-3 rounded-xl border border-white/10 text-xs text-white h-48">${data.l_tr || ''}</textarea>
+                    </div>
                 </div>
             `;
             container.appendChild(box);
