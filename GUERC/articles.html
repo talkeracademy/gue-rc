@@ -8,12 +8,19 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&display=swap');
-        body { margin: 0; background: #020617; font-family: 'Inter', sans-serif; color: white; min-height: 100vh; }
+        body { margin: 0; background: #020617; font-family: 'Inter', sans-serif; color: white; min-height: 100vh; transition: background 0.3s; }
         body.light-mode { background: #f8fafc; color: #0f172a; }
+        
         .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 24px; }
         body.light-mode .glass-panel { background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(0, 0, 0, 0.05); }
+        body.light-mode h3 { color: #0f172a !important; }
+
         .article-row { transition: all 0.3s ease; }
         .article-row:hover { transform: translateX(10px); background: rgba(34, 211, 238, 0.05); }
+        
+        /* Lang Switcher Style */
+        .lang-select { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 6px 12px; border-radius: 12px; font-size: 12px; cursor: pointer; outline: none; font-weight: bold; }
+        body.light-mode .lang-select { background: white; border: 1px solid rgba(0,0,0,0.1); color: #0f172a; }
     </style>
 </head>
 <body>
@@ -21,8 +28,14 @@
         <a href="index.html" class="flex items-center space-x-2 text-cyan-400 hover:text-cyan-300 transition">
             <i class="fa-solid fa-arrow-left"></i> <span id="nav-back-text">Back to Home</span>
         </a>
-        <div class="flex items-center space-x-8 text-2xl">
-            <i id="themeToggle" class="fa-solid fa-moon cursor-pointer hover:text-cyan-400 transition"></i>
+        
+        <div class="flex items-center space-x-6">
+            <select id="langSelect" class="lang-select">
+                <option value="en">ENG</option>
+                <option value="uz">UZB</option>
+                <option value="tr">TUR</option>
+            </select>
+            <i id="themeToggle" class="fa-solid fa-moon cursor-pointer hover:text-cyan-400 transition text-2xl"></i>
         </div>
     </nav>
 
@@ -53,30 +66,28 @@
         const db = getFirestore(app);
 
         const pageTranslations = {
-            uz: { back: "Bosh sahifaga qaytish", title: "Maqolalar", subtitle: "Bizning so'nggi tadqiqotlarimiz va nashrlarimiz.", read: "O'qish" },
+            uz: { back: "Bosh sahifa", title: "Maqolalar", subtitle: "Bizning so'nggi tadqiqotlarimiz va nashrlarimiz.", read: "O'qish" },
             en: { back: "Back to Home", title: "Articles", subtitle: "Explore our latest research and publications.", read: "Read PDF" },
-            tr: { back: "Ana Sayfaya Dön", title: "Makaleler", subtitle: "En son araştırmalarımızı ve yayınlarımızı keşfedin.", read: "PDF Oku" }
+            tr: { back: "Ana Sayfa", title: "Makaleler", subtitle: "En son araştırmalarımızı ve yayınlarımızı keşfedin.", read: "PDF Oku" }
         };
 
-        onSnapshot(doc(db, "content", "articles"), (docSnap) => {
+        let currentData = null;
+
+        function renderArticles() {
             const lang = localStorage.getItem('preferredLang') || 'en';
             const t = pageTranslations[lang];
+            const listContainer = document.getElementById('articlesList');
 
-            // Update static text
+            // Update Page Text
             document.getElementById('nav-back-text').innerText = t.back;
             document.getElementById('page-title').innerText = t.title;
             document.getElementById('page-subtitle').innerText = t.subtitle;
+            document.getElementById('langSelect').value = lang;
 
-            const listContainer = document.getElementById('articlesList');
-            
-            if (docSnap.exists() && docSnap.data().items) {
-                const articles = docSnap.data().items;
+            if (currentData && currentData.items) {
                 listContainer.innerHTML = "";
-
-                articles.forEach(art => {
-                    // Logic to pick the right language title
+                currentData.items.forEach(art => {
                     const displayTitle = art[`t_${lang}`] || art.t_en || "Untitled Article";
-                    
                     listContainer.innerHTML += `
                         <div class="article-row glass-panel p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-white/5">
                             <div class="flex-1">
@@ -92,7 +103,22 @@
             } else {
                 listContainer.innerHTML = "<p class='opacity-50 text-center'>No articles found.</p>";
             }
+        }
+
+        // Real-time Firebase Listener
+        onSnapshot(doc(db, "content", "articles"), (docSnap) => {
+            if (docSnap.exists()) {
+                currentData = docSnap.data();
+                renderArticles();
+            }
         });
+
+        // Language Switcher Logic
+        const langSelect = document.getElementById('langSelect');
+        langSelect.onchange = (e) => {
+            localStorage.setItem('preferredLang', e.target.value);
+            renderArticles(); // Instant re-render
+        };
 
         // Theme Toggle
         const themeToggle = document.getElementById('themeToggle');
