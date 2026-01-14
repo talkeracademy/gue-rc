@@ -68,20 +68,23 @@
         }
 
         .nav-item i {
-            font-size: 2.8rem;
+            font-size: 2.2rem;
             margin-bottom: 12px;
             filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.3));
         }
 
+        @media (min-width: 768px) {
+            .nav-item i { font-size: 2.8rem; }
+        }
+
         .nav-item span {
-            font-size: 0.875rem;
+            font-size: 0.75rem;
             font-weight: 500;
-            white-space: nowrap;
+            text-align: center;
         }
 
         html { scroll-behavior: smooth; }
 
-        /* Smooth Toast Animation */
         #toast.show {
             animation: slideUp 0.5s forwards, fadeOut 0.5s 3.5s forwards;
         }
@@ -96,22 +99,23 @@
 
     <canvas id="bg-canvas"></canvas>
 
-    <nav class="flex justify-between items-center p-10">
-        <div>
-            <h1 id="main-title" class="text-4xl font-bold tracking-tight">Global Uzbek Education</h1>
-            <p id="main-subtitle" class="text-[11px] tracking-[0.5em] uppercase opacity-50 mt-1">Research Center</p>
+    <nav class="flex flex-wrap justify-between items-center p-6 md:p-10 gap-4">
+        <div class="flex-shrink-0">
+            <h1 id="main-title" class="text-2xl md:text-4xl font-bold tracking-tight">Global Uzbek Education</h1>
+            <p id="main-subtitle" class="text-[9px] md:text-[11px] tracking-[0.3em] md:tracking-[0.5em] uppercase opacity-50 mt-1">Research Center</p>
         </div>
-        <div class="flex items-center space-x-8 text-2xl">
+        
+        <div class="flex items-center space-x-4 md:space-x-8 text-xl md:text-2xl">
             <div class="relative group flex items-center">
-                <img id="currentFlag" src="https://flagcdn.com/w40/uz.png" class="w-8 rounded shadow-2xl cursor-pointer border border-white/10" alt="UZ">
-                <div class="absolute top-full right-0 mt-2 py-2 bg-white dark:bg-slate-900 border border-black/5 dark:border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 min-w-[140px]">
-                    <button onclick="changeLang('uz')" class="w-full flex items-center space-x-3 px-4 py-2 hover:bg-cyan-500/10 transition text-sm">
+                <img id="currentFlag" src="https://flagcdn.com/w40/uz.png" class="w-6 md:w-8 rounded shadow-2xl cursor-pointer border border-white/10" alt="UZ">
+                <div class="absolute top-full right-0 mt-2 py-2 bg-white dark:bg-slate-900 border border-black/5 dark:border-white/10 rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 min-w-[120px] md:min-w-[140px]">
+                    <button onclick="changeLang('uz')" class="w-full flex items-center space-x-3 px-4 py-2 hover:bg-cyan-500/10 transition text-xs md:text-sm">
                         <img src="https://flagcdn.com/w40/uz.png" class="w-5 rounded-sm"> <span class="dark:text-white">O'zbek</span>
                     </button>
-                    <button onclick="changeLang('en')" class="w-full flex items-center space-x-3 px-4 py-2 hover:bg-cyan-500/10 transition text-sm">
+                    <button onclick="changeLang('en')" class="w-full flex items-center space-x-3 px-4 py-2 hover:bg-cyan-500/10 transition text-xs md:text-sm">
                         <img src="https://flagcdn.com/w40/gb.png" class="w-5 rounded-sm"> <span class="dark:text-white">English</span>
                     </button>
-                    <button onclick="changeLang('tr')" class="w-full flex items-center space-x-3 px-4 py-2 hover:bg-cyan-500/10 transition text-sm">
+                    <button onclick="changeLang('tr')" class="w-full flex items-center space-x-3 px-4 py-2 hover:bg-cyan-500/10 transition text-xs md:text-sm">
                         <img src="https://flagcdn.com/w40/tr.png" class="w-5 rounded-sm"> <span class="dark:text-white">Türkçe</span>
                     </button>
                 </div>
@@ -119,11 +123,11 @@
 
             <i id="themeToggle" class="fa-solid fa-moon cursor-pointer hover:text-cyan-400 transition"></i>
             <i id="userBtn" class="fa-regular fa-user cursor-pointer hover:text-cyan-400 transition"></i>
-            <button id="memberLogoutBtn" class="hidden text-xs bg-red-500/20 text-red-400 px-3 py-1 rounded-full border border-red-500/30 hover:bg-red-500/40 transition">Logout</button>
+            <button id="memberLogoutBtn" class="hidden text-[10px] md:text-xs bg-red-500/20 text-red-400 px-3 py-1 rounded-full border border-red-500/30 hover:bg-red-500/40 transition">Logout</button>
         </div>
     </nav>
 
-    <main class="flex items-center justify-center min-h-[65vh] px-8">
+    <main class="flex items-center justify-center min-h-[60vh] px-4 md:px-8">
         <div class="glass-panel grid grid-cols-2 md:grid-cols-4 gap-y-10 md:gap-y-16 gap-x-4 md:gap-x-12 p-8 md:p-20 max-w-6xl w-full">
             <button id="openAboutBtn" class="nav-item">
                 <i class="fa-solid fa-users-rays"></i>
@@ -160,9 +164,9 @@
         </div>
     </main>
 
-    <section id="contact-section" class="max-w-4xl mx-auto px-8 py-24">
-        <div class="glass-panel p-10">
-            <h2 id="txt-contact-title" class="text-3xl font-bold mb-8 text-center text-cyan-400">Get in Touch</h2>
+    <section id="contact-section" class="max-w-4xl mx-auto px-6 md:px-8 py-24">
+        <div class="glass-panel p-6 md:p-10">
+            <h2 id="txt-contact-title" class="text-2xl md:text-3xl font-bold mb-8 text-center text-cyan-400">Get in Touch</h2>
             <form id="homeContactForm" class="space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <input type="text" id="contactName" placeholder="Full Name" required class="w-full bg-slate-800/50 rounded-xl p-4 border border-white/10 outline-none focus:border-cyan-400 transition">
@@ -184,10 +188,10 @@
     <section id="partners-section" class="max-w-6xl mx-auto px-8 py-24 border-t border-white/5">
         <h2 class="text-center text-slate-500 uppercase tracking-[0.4em] text-[10px] mb-16">Official Strategic Partners</h2>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-12 items-center justify-items-center opacity-50 hover:opacity-100 transition-opacity">
-            <img src="logo1.png" alt="Partner" class="h-10 grayscale hover:grayscale-0 transition duration-500">
-            <img src="logo2.png" alt="Partner" class="h-10 grayscale hover:grayscale-0 transition duration-500">
-            <img src="logo3.png" alt="Partner" class="h-10 grayscale hover:grayscale-0 transition duration-500">
-            <img src="logo4.png" alt="Partner" class="h-10 grayscale hover:grayscale-0 transition duration-500">
+            <div class="h-10 w-32 bg-white/5 rounded-lg animate-pulse flex items-center justify-center text-[8px]">LOGO 1</div>
+            <div class="h-10 w-32 bg-white/5 rounded-lg animate-pulse flex items-center justify-center text-[8px]">LOGO 2</div>
+            <div class="h-10 w-32 bg-white/5 rounded-lg animate-pulse flex items-center justify-center text-[8px]">LOGO 3</div>
+            <div class="h-10 w-32 bg-white/5 rounded-lg animate-pulse flex items-center justify-center text-[8px]">LOGO 4</div>
         </div>
     </section>
 
@@ -198,30 +202,30 @@
     </footer>
 
     <div id="aboutModal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/80 backdrop-blur-xl p-4">
-        <div class="glass-panel p-10 max-w-2xl w-full relative overflow-y-auto max-h-[90vh]">
+        <div class="glass-panel p-6 md:p-10 max-w-2xl w-full relative overflow-y-auto max-h-[90vh]">
             <button id="closeAboutBtn" class="absolute top-6 right-6 text-slate-400 hover:text-white transition">
                 <i class="fa-solid fa-xmark text-2xl"></i>
             </button>
-            <h2 id="modal-about-title" class="text-4xl font-bold mb-6 text-cyan-400">About GUERC</h2>
-            <div class="space-y-6 text-slate-300 leading-relaxed">
+            <h2 id="modal-about-title" class="text-2xl md:text-4xl font-bold mb-6 text-cyan-400 text-center md:text-left">About GUERC</h2>
+            <div class="space-y-6 text-slate-300 leading-relaxed text-sm md:text-base">
                 <p id="modal-about-p">Global Uzbek Education Research Center bridges local talent with global standards.</p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
                     <div class="bg-slate-900/50 p-4 rounded-2xl border border-white/5">
                         <h3 class="text-cyan-400 font-bold mb-2"><i class="fas fa-bullseye mr-2"></i> <span id="modal-mission-title">Mission</span></h3>
-                        <p id="modal-mission-p" class="text-sm">Empowering the next generation through global education.</p>
+                        <p id="modal-mission-p" class="text-xs">Empowering the next generation through global education.</p>
                     </div>
                     <div class="bg-slate-900/50 p-4 rounded-2xl border border-white/5">
                         <h3 class="text-cyan-400 font-bold mb-2"><i class="fas fa-eye mr-2"></i> <span id="modal-vision-title">Vision</span></h3>
-                        <p id="modal-vision-p" class="text-sm">A future of global innovation and research.</p>
+                        <p id="modal-vision-p" class="text-xs">A future of global innovation and research.</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="authModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md">
-        <div class="glass-panel p-10 w-full max-w-md">
-            <h2 id="modalTitle" class="text-2xl font-bold mb-6 text-center">Member Access</h2>
+    <div id="authModal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-md p-4">
+        <div class="glass-panel p-8 md:p-10 w-full max-w-md">
+            <h2 id="modalTitle" class="text-2xl font-bold mb-6 text-center text-cyan-400">Member Access</h2>
             <div class="space-y-4">
                 <input type="email" id="authEmail" placeholder="Email" class="w-full bg-slate-800/50 rounded-xl p-3 border border-white/10 text-white outline-none">
                 <input type="password" id="authPassword" placeholder="Password" class="w-full bg-slate-800/50 rounded-xl p-3 border border-white/10 text-white outline-none">
@@ -285,23 +289,17 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // TOAST FUNCTION
+        // UI HELPERS
         function showToast(message, isError = false) {
             const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toastMessage');
             const toastIcon = document.getElementById('toastIcon');
             toastMsg.innerText = message;
-            if (isError) {
-                toastIcon.className = "fa-solid fa-circle-exclamation text-red-400 text-xl";
-                toast.querySelector('.glass-panel').classList.add('border-red-500/50');
-                toast.querySelector('.glass-panel').classList.remove('border-cyan-500/50');
-            } else {
-                toastIcon.className = "fa-solid fa-circle-check text-cyan-400 text-xl";
-                toast.querySelector('.glass-panel').classList.remove('border-red-500/50');
-                toast.querySelector('.glass-panel').classList.add('border-cyan-500/50');
-            }
+            toastIcon.className = isError ? "fa-solid fa-circle-exclamation text-red-400 text-xl" : "fa-solid fa-circle-check text-cyan-400 text-xl";
+            
             toast.classList.remove('hidden');
-            setTimeout(() => { toast.classList.add('hidden'); }, 4000);
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); toast.classList.add('hidden'); }, 4000);
         }
 
         const translations = {
@@ -377,6 +375,7 @@
             } catch (err) { showToast(err.message, true); }
         };
 
+        // AUTH LOGIC
         const authModal = document.getElementById('authModal');
         const userBtn = document.getElementById('userBtn');
         const logoutBtn = document.getElementById('memberLogoutBtn');
@@ -399,9 +398,12 @@
                 if(isLogin) {
                     await signInWithEmailAndPassword(auth, email, pass);
                 } else {
+                    // SECURE REGISTRATION WITH EMAIL VERIFICATION
                     const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
                     await sendEmailVerification(userCredential.user);
                     showToast(translations[lang].verifyEmail);
+                    // Sign out until verified
+                    await signOut(auth);
                 }
                 authModal.classList.add('hidden');
             } catch (e) { showToast(e.message, true); }
@@ -423,6 +425,7 @@
             localStorage.setItem('theme', isLight ? 'light' : 'dark');
         };
 
+        // INITIAL LOAD
         const savedLang = localStorage.getItem('preferredLang') || 'uz';
         window.changeLang(savedLang);
         if (localStorage.getItem('theme') === 'light') {

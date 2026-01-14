@@ -1,25 +1,25 @@
-# GUERC - Professional Education Portal
+# Global Uzbek Education Research Center (GUERC) Portal
 
-A high-performance, secure education management platform built for GUERC. This project features a multi-lingual frontend and a custom-built administrative dashboard.
+A secure, multi-lingual educational platform and administrative dashboard designed for scalability and data integrity.
 
-## 🚀 Key Features
-- **Dynamic Content Management**: Admin can update Courses, Camps, and Articles in real-time.
-- **Tri-lingual Support**: Full support for English, Uzbek, and Turkish.
-- **Application Tracking**: Integrated CRM to manage student inquiries and program applications.
-- **Data Portability**: One-click CSV export for external data analysis.
+## 🏗️ Architecture & DevSecOps Focus
+This project was built with a "Security by Design" mindset, essential for modern DevSecOps workflows:
 
-## 🛡️ DevSecOps & Security Highlights
-- **Firestore Security Rules**: Implemented granular access control (Public: Read-only/Create | Admin: Full Access).
-- **Authentication**: Firebase Auth with mandatory Email Verification for administrative access.
-- **Authorized Domains**: Strict domain whitelisting to prevent unauthorized API calls.
-- **Environment Safety**: Front-end validation for all user input fields to prevent injection.
+- **Identity & Access Management (IAM)**: Leverages Firebase Authentication with mandatory SMTP-based email verification gates for administrative privileges.
+- **Database Hardening**: Firestore Security Rules implement a "Least Privilege" model, separating public `write` (applications) from administrative `read/write` (content management).
+- **Domain Whitelisting**: Restricted OAuth redirects and API calls to authorized production domains only.
+- **Data Portability**: Integrated sanitization logic for CSV exports to ensure Excel-compatibility and data backup reliability.
 
-## 🛠️ Tech Stack
-- **Frontend**: HTML5, Tailwind CSS, JavaScript (ES6+).
-- **Backend-as-a-Service**: Firebase (Firestore, Authentication, Hosting).
-- **Libraries**: FontAwesome, SortableJS (for drag-and-drop management).
+## 🚀 Technical Specifications
+- **Frontend**: Vanilla JS (ES6+), Tailwind CSS (JIT Engine).
+- **Backend**: Firebase Cloud Firestore (NoSQL), Firebase Hosting.
+- **UI/UX**: Responsive glassmorphism design, multi-language state management (UZ, EN, TR).
 
-## 📂 Project Structure
-- `index.html`: Main landing page for students.
-- `admin.html`: Protected dashboard for staff.
-- `firebase-rules.json`: Security logic for database protection.
+## 🛠️ Installation & Deployment
+1. Clone the repository.
+2. Initialize Firebase CLI: `firebase init`.
+3. Deploy Security Rules: `firebase deploy --only firestore:rules`.
+4. Deploy Hosting: `firebase deploy --only hosting`.
+
+---
+*Developed with a focus on secure deployment pipelines and administrative efficiency.*
