@@ -25,6 +25,10 @@
 
         .lang-tab { padding: 8px 16px; border-radius: 12px; font-size: 12px; cursor: pointer; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #94a3b8; font-weight: bold; }
         .lang-tab.active { background: #22d3ee !important; color: #020617 !important; border-color: #22d3ee !important; }
+        
+        /* AI Chat Styles */
+        #aiChatWindow::-webkit-scrollbar { width: 4px; }
+        #aiChatWindow::-webkit-scrollbar-thumb { background: rgba(34, 211, 238, 0.2); border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -96,6 +100,25 @@
                 </table>
             </div>
         </section>
+
+        <section id="geminiAssistant" class="mt-20 glass-panel p-8 border-cyan-500/30 relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-10"><i class="fa-solid fa-brain text-6xl text-cyan-400"></i></div>
+            <div class="flex items-center space-x-3 mb-6">
+                <div class="bg-cyan-500 p-2 rounded-lg text-slate-950"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                <h3 class="text-2xl font-bold">GUERC AI Assistant</h3>
+            </div>
+            <div id="aiChatWindow" class="h-80 overflow-y-auto mb-6 p-6 bg-slate-950/80 rounded-2xl text-sm border border-white/5 space-y-4">
+                <div class="text-left">
+                    <span class="bg-cyan-500/10 text-cyan-300 p-4 rounded-2xl rounded-tl-none inline-block border border-cyan-500/20">
+                        <b>Gemini:</b> Assalomu alaykum! I am your GUERC AI. Paste a Google Drive link to convert it, or ask me to help write new program descriptions in any language.
+                    </span>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <input id="aiInput" type="text" placeholder="Paste link or ask a question..." class="flex-1 bg-slate-900/50 border border-white/10 p-4 rounded-2xl text-white outline-none focus:border-cyan-500 transition">
+                <button id="askAiBtn" class="bg-cyan-500 text-slate-950 px-8 py-4 rounded-2xl font-bold hover:bg-cyan-400 transition transform hover:scale-105 active:scale-95">Send</button>
+            </div>
+        </section>
     </main>
 
     <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] hidden">
@@ -122,9 +145,83 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // --- GEMINI LOGIC ---
+        const GEMINI_KEY = "AIzaSyA9bFfim5g_VTjqLp-LrECLWaePHmLeP0g";
+
+        document.getElementById('askAiBtn').onclick = async () => {
+            const input = document.getElementById('aiInput');
+            const chat = document.getElementById('aiChatWindow');
+            const msg = input.value.trim();
+            if (!msg) return;
+
+            chat.innerHTML += `<div class="flex justify-end mb-4"><div class="bg-slate-800 text-white p-3 rounded-2xl rounded-tr-none max-w-[80%] border border-white/5 shadow-lg">${msg}</div></div>`;
+            input.value = "";
+            chat.scrollTop = chat.scrollHeight;
+
+            // Extract ID using Regex
+            const driveRegex = /\/d\/([a-zA-Z0-9_-]+)/;
+            const match = msg.match(driveRegex);
+            
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `You are the GUERC Admin Assistant. Convert this link to a direct thumbnail URL: ${msg}` }] }]
+                    })
+                });
+
+                const data = await res.json();
+                let aiText = "";
+
+                if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    aiText = data.candidates[0].content.parts[0].text;
+                } else if (match) {
+                    aiText = "I've extracted the direct image link for you below:";
+                } else {
+                    throw new Error("AI is currently restricted. Please try a different query.");
+                }
+
+                let finalHtml = `<div class="flex flex-col mb-4 items-start">
+                    <div class="bg-cyan-500/10 text-cyan-300 p-4 rounded-2xl rounded-tl-none max-w-[80%] border border-cyan-500/20 shadow-xl">
+                        <b>Gemini:</b> ${aiText}
+                    </div>`;
+
+                if (match) {
+                    // Using the Thumbnail URL format which is much more reliable for public files
+                    const thumbUrl = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+                    finalHtml += `
+                        <div class="mt-3 p-2 bg-slate-900 rounded-xl border border-white/10">
+                            <p class="text-[10px] text-cyan-400 mb-2 font-mono break-all">${thumbUrl}</p>
+                            <img src="${thumbUrl}" referrerPolicy="no-referrer" class="rounded-lg border border-white/10 max-w-[250px] shadow-2xl" alt="Preview">
+                        </div>`;
+                }
+
+                finalHtml += `</div>`;
+                chat.innerHTML += finalHtml;
+
+            } catch (e) {
+                if (match) {
+                    const thumbUrl = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+                    chat.innerHTML += `
+                        <div class="flex flex-col mb-4 items-start">
+                            <div class="bg-cyan-500/10 text-cyan-300 p-4 rounded-2xl rounded-tl-none max-w-[80%] border border-cyan-500/20 shadow-xl">
+                                <b>Gemini (Auto-Extract):</b> Link converted successfully.
+                            </div>
+                            <img src="${thumbUrl}" referrerPolicy="no-referrer" class="mt-2 rounded-lg border border-white/10 max-w-[250px]" alt="Preview">
+                        </div>`;
+                } else {
+                    chat.innerHTML += `<div class="text-red-400 text-xs italic p-2 bg-red-500/5 mt-2 border border-red-500/20 rounded-lg"><b>System Notice:</b> ${e.message}</div>`;
+                }
+            }
+            chat.scrollTop = chat.scrollHeight;
+        };
+
+        document.getElementById('aiInput').onkeypress = (e) => { if(e.key === 'Enter') document.getElementById('askAiBtn').click(); };
+
+        // --- REMAINING DATABASE & UI LOGIC ---
         let currentCategory = 'academy';
 
-        // Security Gate: Verification & Auth check
         onAuthStateChanged(auth, (user) => {
             if (!user) {
                 window.location.href = 'index.html';
@@ -157,8 +254,6 @@
             toast.classList.add('show');
             setTimeout(() => { toast.classList.remove('show'); toast.classList.add('hidden'); }, 4000);
         }
-
-        // --- UI HANDLERS ---
 
         window.switchCardLang = (btn, lang) => {
             const card = btn.closest('.program-admin-card');
@@ -201,8 +296,6 @@
             loadApplications();
         };
 
-        // --- DATA LOADERS ---
-
         async function loadData(cat) {
             const snap = await getDoc(doc(db, "content", cat));
             if (cat === 'articles') {
@@ -219,8 +312,6 @@
                 if (snap.exists() && snap.data().programs) snap.data().programs.forEach(p => addProgramBox(p));
             }
         }
-
-        // --- DOM MANIPULATORS ---
 
         window.addProgramBox = (data = {t_uz:'', t_en:'', t_tr:'', s_uz:'', s_en:'', s_tr:'', l_uz:'', l_en:'', l_tr:'', img:''}) => {
             const container = document.getElementById('adminProgramsContainer');
@@ -262,7 +353,7 @@
         window.addArticleRow = (data = {t_uz:'', t_en:'', t_tr:'', date:'', url:''}) => {
             const container = document.getElementById('articlesContainer');
             const row = document.createElement('div');
-            row.className = "glass-panel p-4 space-y-3 border border-white/5";
+            row.className = "glass-panel p-4 space-y-3 border border-white/5 mb-2";
             row.innerHTML = `
                 <div class="grid grid-cols-3 gap-2">
                     <input type="text" value="${data.t_uz || ''}" placeholder="Title (UZ)" class="art-t-uz bg-slate-900/50 p-2 rounded-lg border border-white/10 text-white text-xs">
@@ -281,15 +372,13 @@
         window.addGalleryRow = (url = '') => {
             const container = document.getElementById('galleryContainer');
             const row = document.createElement('div');
-            row.className = "glass-panel p-4 flex gap-4 items-center border border-white/5";
+            row.className = "glass-panel p-4 flex gap-4 items-center border border-white/5 mb-2";
             row.innerHTML = `
                 <input type="text" value="${url}" placeholder="Image URL" class="gal-u flex-1 bg-slate-900/50 p-2 rounded-lg border border-white/10 text-white">
                 <button onclick="this.parentElement.remove()" class="text-red-400 px-2"><i class="fa-solid fa-trash"></i></button>
             `;
             container.appendChild(row);
         };
-
-        // --- DATABASE OPERATIONS ---
 
         document.getElementById('saveBtn').onclick = async () => {
             try {
@@ -347,20 +436,11 @@
                                 ${a.category || a.program}
                             </td>
                             <td class="p-4 text-xs text-slate-400 italic">
-                                "${a.message || 'No message provided'}"
+                                "${a.message || 'No message'}"
                             </td>
-                            <td class="p-4 text-[10px] opacity-50">
-                                ${new Date(a.date).toLocaleDateString()}
-                            </td>
-                            <td class="p-4 text-right">
-                                <div class="flex justify-end space-x-2">
-                                    <button onclick="toggleAppStatus('${id}', '${a.status}')" class="hover:text-cyan-400 transition p-2" title="Mark Handled">
-                                        <i class="fa-solid ${isRead ? 'fa-envelope-open' : 'fa-envelope'}"></i>
-                                    </button>
-                                    <button onclick="deleteApplication('${id}')" class="hover:text-red-400 transition p-2" title="Delete">
-                                        <i class="fa-solid fa-trash-can"></i>
-                                    </button>
-                                </div>
+                            <td class="p-4 text-right flex justify-end space-x-2">
+                                <button onclick="toggleAppStatus('${id}', '${a.status}')" class="hover:text-cyan-400 transition p-2"><i class="fa-solid ${isRead ? 'fa-envelope-open' : 'fa-envelope'}"></i></button>
+                                <button onclick="deleteApplication('${id}')" class="hover:text-red-400 transition p-2"><i class="fa-solid fa-trash-can"></i></button>
                             </td>
                         </tr>`;
                 });
@@ -368,53 +448,31 @@
         }
 
         window.deleteApplication = async (id) => {
-            if (confirm("Are you sure you want to delete this record?")) {
-                try {
-                    await deleteDoc(doc(db, "applications", id));
-                    showToast("Record removed");
-                } catch (err) { showToast("Error deleting", true); }
+            if (confirm("Delete this record?")) {
+                try { await deleteDoc(doc(db, "applications", id)); showToast("Removed"); } catch (err) { showToast("Error", true); }
             }
         };
 
-        window.toggleAppStatus = async (id, currentStatus) => {
-            try {
-                const newStatus = currentStatus === 'handled' ? 'new' : 'handled';
-                await updateDoc(doc(db, "applications", id), { status: newStatus });
-            } catch (err) { showToast("Update failed", true); }
+        window.toggleAppStatus = async (id, cur) => {
+            try { await updateDoc(doc(db, "applications", id), { status: cur === 'handled' ? 'new' : 'handled' }); } catch (err) { showToast("Error", true); }
         };
-
-        // --- EXPORT TO CSV ---
 
         document.getElementById('exportCsvBtn').onclick = async () => {
             try {
                 const snap = await getDocs(query(collection(db, "applications"), orderBy("date", "desc")));
-                let csv = "Date,Name,Email,Program/Category,Message,Status\n";
-                
+                let csv = "Date,Name,Email,Category,Message,Status\n";
                 snap.forEach(d => {
                     const a = d.data();
-                    const date = new Date(a.date).toLocaleDateString();
-                    const name = `"${(a.name || '').replace(/"/g, '""')}"`;
-                    const email = `"${(a.email || '').replace(/"/g, '""')}"`;
-                    const category = `"${(a.category || a.program || '').replace(/"/g, '""')}"`;
-                    const msg = `"${(a.message || '').replace(/"/g, '""')}"`;
-                    const status = a.status || 'new';
-                    
-                    csv += `${date},${name},${email},${category},${msg},${status}\n`;
+                    csv += `${new Date(a.date).toLocaleDateString()},"${a.name}","${a.email}","${a.category || a.program}","${(a.message || '').replace(/"/g, '""')}",${a.status}\n`;
                 });
-
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement("a");
+                const blob = new Blob([csv], { type: 'text/csv' });
                 const url = URL.createObjectURL(blob);
-                link.setAttribute("href", url);
-                link.setAttribute("download", `GUERC_Applications_${new Date().toLocaleDateString()}.csv`);
-                link.style.visibility = 'hidden';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                showToast("CSV Exported!");
-            } catch (err) {
-                showToast("Export failed: " + err.message, true);
-            }
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `GUERC_Apps.csv`;
+                a.click();
+                showToast("Exported!");
+            } catch (err) { showToast("Export Error", true); }
         };
 
         Sortable.create(document.getElementById('adminProgramsContainer'), { animation: 150, handle: '.drag-handle' });
